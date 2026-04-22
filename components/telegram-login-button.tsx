@@ -1,17 +1,13 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 
 export default function TelegramLoginButton() {
   const ref = useRef<HTMLDivElement>(null)
-  const router = useRouter()
 
   useEffect(() => {
     if (!ref.current) return
 
-    // Expose callback to window
     ;(window as any).onTelegramAuth = async (user: any) => {
       const res = await fetch('/api/auth/telegram', {
         method: 'POST',
@@ -25,27 +21,8 @@ export default function TelegramLoginButton() {
         return
       }
 
-      // Sign in via magic link
-      const supabase = createClient()
-      const url = new URL(data.magic_link)
-      const token_hash = url.searchParams.get('token_hash') || url.searchParams.get('token')
-      const type = url.searchParams.get('type') as any
-
-      if (token_hash) {
-        await supabase.auth.verifyOtp({ token_hash, type: 'magiclink' })
-      }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', data.userId)
-        .single()
-
-      if (profile?.role === 'craftsman') {
-        router.push('/dashboard')
-      } else {
-        router.push('/orders')
-      }
+      // Redirect to magic link — Supabase sets session and redirects back
+      window.location.href = data.magic_link
     }
 
     const script = document.createElement('script')
