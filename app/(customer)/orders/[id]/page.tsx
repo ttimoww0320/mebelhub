@@ -10,6 +10,7 @@ import OfferForm from './offer-form'
 import AcceptOffer from './accept-offer'
 import Chat from './chat'
 import ReviewForm from './review-form'
+import ChatToggle from './chat-toggle'
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -289,9 +290,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         )}
       </div>
 
-      {/* ── CHAT (заказчик всегда + только принятый мастер) ── */}
+      {/* ── CHAT ── */}
       {user && (isOwner || isAcceptedCraftsman) && (
-        <Chat orderId={order.id} currentUserId={user.id} />
+        <ChatToggle orderId={order.id} currentUserId={user.id} />
       )}
     </div>
   )
