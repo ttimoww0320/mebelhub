@@ -44,7 +44,6 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   const dims = [order.width_cm, order.height_cm, order.depth_cm].filter(Boolean)
 
-  // Sort offers: accepted first, then by craftsman rating desc
   const sortedOffers = [...(order.offers ?? [])].sort((a: any, b: any) => {
     if (a.status === 'accepted') return -1
     if (b.status === 'accepted') return 1
@@ -53,33 +52,34 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-      {/* Status banner for customer */}
+
+      {/* ── STEP BANNER ── */}
       {isOwner && (
-        <div className="mb-5">
+        <div className="mb-6">
           {order.status === 'open' && !acceptedOffer && (
             <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700">
-              📬 Ваш заказ опубликован. Ожидайте предложений от мастеров — они появятся ниже.
+              <span className="font-semibold">Шаг 1 из 3.</span> Ваш заказ опубликован — ждите предложений от мастеров ниже.
             </div>
           )}
-          {acceptedOffer && existingPayment?.status !== 'paid' && (
-            <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 text-sm text-orange-700 font-medium">
-              ⚡ Вы выбрали мастера! Оплатите депозит 30% ниже чтобы подтвердить заказ.
+          {order.status === 'open' && acceptedOffer && (
+            <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 text-sm text-orange-700">
+              <span className="font-semibold">Шаг 2 из 3.</span> Вы выбрали мастера. Теперь свяжитесь с ним в чате и договоритесь об оплате.
             </div>
           )}
-          {existingPayment?.status === 'paid' && order.status !== 'completed' && (
-            <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700 font-medium">
-              ✓ Депозит оплачен. Мастер работает над вашим заказом.
+          {order.status === 'in_progress' && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 text-sm text-yellow-800">
+              <span className="font-semibold">Шаг 3 из 3.</span> Мастер работает над заказом. Когда получите готовую мебель — нажмите кнопку ниже чтобы закрыть сделку.
             </div>
           )}
           {order.status === 'completed' && (
-            <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-600 font-medium">
-              ✅ Заказ завершён.
+            <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700 font-semibold">
+              ✅ Сделка закрыта!{existingReview ? ' Спасибо за ваш отзыв.' : ' Пожалуйста, оцените работу мастера.'}
             </div>
           )}
         </div>
       )}
 
-      {/* Order header */}
+      {/* ── ORDER HEADER ── */}
       <div className="mb-6">
         <div className="flex items-start justify-between mb-2">
           <h1 className="text-2xl font-bold">{order.title}</h1>
@@ -95,11 +95,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           </Badge>
         </div>
         <p className="text-gray-500 text-sm">
-          Заказчик: {(order.customer as any)?.full_name} · {new Date(order.created_at).toLocaleDateString('ru-RU')}
+          {new Date(order.created_at).toLocaleDateString('ru-RU')}
         </p>
       </div>
 
-      {/* Images */}
+      {/* ── IMAGES ── */}
       {order.images?.length > 0 && (
         <div className="flex gap-3 flex-wrap mb-6">
           {order.images.map((url: string, i: number) => (
@@ -108,7 +108,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </div>
       )}
 
-      {/* Details */}
+      {/* ── DETAILS ── */}
       <Card className="mb-6">
         <CardContent className="pt-6 space-y-4">
           <div>
@@ -135,88 +135,129 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </CardContent>
       </Card>
 
-      {/* Offer form for craftsmen */}
+      {/* ── ACCEPTED CRAFTSMAN CARD ── */}
+      {acceptedOffer && (
+        <Card className="mb-6 border-green-300 bg-green-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base text-green-800">Ваш мастер</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              <Avatar className="w-12 h-12">
+                <AvatarFallback className="bg-green-200 text-green-800 font-bold">
+                  {acceptedOffer.craftsman?.full_name?.[0] ?? '?'}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <Link href={`/craftsman/${acceptedOffer.craftsman_id}`} className="font-semibold hover:underline hover:text-orange-600">
+                  {acceptedOffer.craftsman?.full_name}
+                </Link>
+                <div className="flex items-center gap-2 text-sm text-gray-600 mt-0.5">
+                  {(acceptedOffer.craftsman?.rating ?? 0) > 0 && (
+                    <span className="text-yellow-600">★ {Number(acceptedOffer.craftsman?.rating).toFixed(1)}</span>
+                  )}
+                  {acceptedOffer.craftsman?.verified && (
+                    <span className="text-green-600">✓ Проверен</span>
+                  )}
+                  <span>{Number(acceptedOffer.price).toLocaleString()} сум · {acceptedOffer.delivery_days} дней</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── OFFER FORM FOR CRAFTSMEN ── */}
       {isCraftsman && !hasOffer && order.status === 'open' && (
         <OfferForm orderId={order.id} />
       )}
 
-      {/* Payment deposit */}
-      {isOwner && acceptedOffer && existingPayment?.status !== 'paid' && (
-        <PaymentButton offerId={acceptedOffer.id} price={Number(acceptedOffer.price)} />
-      )}
-
-      {isOwner && acceptedOffer && existingPayment?.status === 'paid' && order.status !== 'completed' && (
-        <div className="my-4 p-4 bg-green-50 border border-green-200 rounded-xl space-y-3">
-          <p className="text-sm text-green-700 font-medium">✓ Депозит оплачен — заказ в работе</p>
-          <CompleteOrder orderId={order.id} />
+      {/* ── PAYMENT (optional, only when Payme/Click configured) ── */}
+      {isOwner && acceptedOffer && order.status === 'in_progress' && existingPayment?.status !== 'paid' && (
+        <div className="mb-6">
+          <PaymentButton offerId={acceptedOffer.id} price={Number(acceptedOffer.price)} />
         </div>
       )}
 
-      {/* Completed: review prompt */}
-      {isOwner && order.status === 'completed' && (
-        <div className="my-4 p-4 bg-gray-50 border rounded-xl text-sm text-gray-600">
-          🎉 Заказ завершён! {existingReview ? 'Спасибо за ваш отзыв.' : 'Оцените работу мастера — это поможет другим заказчикам.'}
-        </div>
+      {/* ── CLOSE DEAL BUTTON ── */}
+      {isOwner && order.status === 'in_progress' && (
+        <Card className="mb-6 border-blue-200 bg-blue-50">
+          <CardContent className="pt-5">
+            <p className="text-sm font-semibold text-blue-800 mb-1">Получили готовую мебель?</p>
+            <p className="text-sm text-blue-700 mb-4">
+              Нажмите кнопку ниже чтобы закрыть сделку и оставить отзыв мастеру.
+            </p>
+            <CompleteOrder orderId={order.id} />
+          </CardContent>
+        </Card>
       )}
 
-      {/* Review form */}
+      {/* ── REVIEW FORM ── */}
       {isOwner && order.status === 'completed' && !existingReview && acceptedOffer && (
         <ReviewForm orderId={order.id} craftsmanId={acceptedOffer.craftsman_id} />
       )}
 
-      {/* Offers list */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">
-          Предложения мастеров ({order.offers?.length || 0})
-        </h2>
-        {!sortedOffers.length ? (
-          <p className="text-gray-400 text-center py-10">Пока нет предложений</p>
-        ) : (
-          <div className="space-y-4">
-            {sortedOffers.map((offer: any) => (
-              <Card key={offer.id} className={offer.status === 'accepted' ? 'border-green-400' : ''}>
-                <CardContent className="pt-4">
-                  <div className="flex items-start gap-3">
-                    <Avatar>
-                      <AvatarFallback>{offer.craftsman?.full_name?.[0] ?? '?'}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <Link href={`/craftsman/${offer.craftsman_id}`} className="font-medium hover:text-orange-600 hover:underline">
-                            {offer.craftsman?.full_name}
-                          </Link>
-                          {(offer.craftsman?.rating ?? 0) > 0 && (
-                            <span className="text-xs text-yellow-600 font-medium">★ {offer.craftsman?.rating?.toFixed(1)}</span>
-                          )}
-                          {offer.craftsman?.verified && (
-                            <span className="text-xs text-green-600 font-medium">✓ Проверен</span>
+      {isOwner && order.status === 'completed' && existingReview && (
+        <div className="mb-6 p-4 bg-gray-50 border rounded-xl text-sm text-gray-500 text-center">
+          Ваш отзыв отправлен. Спасибо!
+        </div>
+      )}
+
+      {/* ── OFFERS LIST ── */}
+      {(order.status === 'open' || sortedOffers.length > 0) && (
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold mb-3">
+            Предложения мастеров ({sortedOffers.length})
+          </h2>
+          {!sortedOffers.length ? (
+            <p className="text-gray-400 text-center py-10">Пока нет предложений</p>
+          ) : (
+            <div className="space-y-3">
+              {sortedOffers.map((offer: any) => (
+                <Card key={offer.id} className={offer.status === 'accepted' ? 'border-green-300 opacity-75' : ''}>
+                  <CardContent className="pt-4">
+                    <div className="flex items-start gap-3">
+                      <Avatar>
+                        <AvatarFallback>{offer.craftsman?.full_name?.[0] ?? '?'}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1 flex-wrap gap-1">
+                          <div className="flex items-center gap-2">
+                            <Link href={`/craftsman/${offer.craftsman_id}`} className="font-medium hover:text-orange-600 hover:underline">
+                              {offer.craftsman?.full_name}
+                            </Link>
+                            {(offer.craftsman?.rating ?? 0) > 0 && (
+                              <span className="text-xs text-yellow-600 font-medium">★ {offer.craftsman?.rating?.toFixed(1)}</span>
+                            )}
+                            {offer.craftsman?.verified && (
+                              <span className="text-xs text-green-600">✓</span>
+                            )}
+                          </div>
+                          {offer.status === 'accepted' && (
+                            <Badge className="bg-green-100 text-green-800">Выбран</Badge>
                           )}
                         </div>
-                        {offer.status === 'accepted' && (
-                          <Badge className="bg-green-100 text-green-800">Принято</Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 mb-2">{offer.comment}</p>
-                      <div className="flex gap-4 text-sm">
-                        <span className="font-semibold text-orange-700">{Number(offer.price).toLocaleString()} сум</span>
-                        <span className="text-gray-400">{offer.delivery_days} дней</span>
+                        <p className="text-sm text-gray-600 mb-2">{offer.comment}</p>
+                        <div className="flex gap-4 text-sm">
+                          <span className="font-semibold text-orange-700">{Number(offer.price).toLocaleString()} сум</span>
+                          <span className="text-gray-400">{offer.delivery_days} дней</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  {isOwner && offer.status === 'pending' && order.status === 'open' && (
-                    <AcceptOffer offerId={offer.id} orderId={order.id} />
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
+                    {isOwner && offer.status === 'pending' && order.status === 'open' && (
+                      <AcceptOffer offerId={offer.id} orderId={order.id} />
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
-      {/* Chat */}
+      {/* ── CHAT ── */}
       {user && (isOwner || hasOffer) && (
-        <div className="mt-8">
+        <div className="mt-4">
           <Chat orderId={order.id} currentUserId={user.id} />
         </div>
       )}
