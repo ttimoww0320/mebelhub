@@ -52,11 +52,46 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+      {/* Status banner for customer */}
+      {isOwner && (
+        <div className="mb-5">
+          {order.status === 'open' && !acceptedOffer && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700">
+              📬 Ваш заказ опубликован. Ожидайте предложений от мастеров — они появятся ниже.
+            </div>
+          )}
+          {acceptedOffer && existingPayment?.status !== 'paid' && (
+            <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 text-sm text-orange-700 font-medium">
+              ⚡ Вы выбрали мастера! Оплатите депозит 30% ниже чтобы подтвердить заказ.
+            </div>
+          )}
+          {existingPayment?.status === 'paid' && order.status !== 'completed' && (
+            <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700 font-medium">
+              ✓ Депозит оплачен. Мастер работает над вашим заказом.
+            </div>
+          )}
+          {order.status === 'completed' && (
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-600 font-medium">
+              ✅ Заказ завершён.
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Order header */}
       <div className="mb-6">
         <div className="flex items-start justify-between mb-2">
           <h1 className="text-2xl font-bold">{order.title}</h1>
-          <Badge className="bg-green-100 text-green-800">{order.status === 'open' ? 'Открыт' : order.status}</Badge>
+          <Badge className={
+            order.status === 'open' ? 'bg-green-100 text-green-800' :
+            order.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+            order.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+            'bg-red-100 text-red-800'
+          }>
+            {order.status === 'open' ? 'Открыт' :
+             order.status === 'in_progress' ? 'В работе' :
+             order.status === 'completed' ? 'Завершён' : 'Отменён'}
+          </Badge>
         </div>
         <p className="text-gray-500 text-sm">
           Заказчик: {(order.customer as any)?.full_name} · {new Date(order.created_at).toLocaleDateString('ru-RU')}
@@ -105,7 +140,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       )}
 
       {/* Payment deposit */}
-      {isOwner && acceptedOffer && order.status === 'open' && existingPayment?.status !== 'paid' && (
+      {isOwner && acceptedOffer && existingPayment?.status !== 'paid' && (
         <PaymentButton offerId={acceptedOffer.id} price={Number(acceptedOffer.price)} />
       )}
 
