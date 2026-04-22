@@ -12,6 +12,8 @@ export interface Profile {
   rating: number | null
   reviews_count: number
   created_at: string
+  telegram_chat_id: number | null
+  telegram_token: string | null
 }
 
 export interface Order {
