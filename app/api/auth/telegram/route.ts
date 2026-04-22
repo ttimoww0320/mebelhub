@@ -20,6 +20,7 @@ function makePassword(telegramId: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  try {
   const data = await req.json()
 
   if (!verifyTelegramData(data)) {
@@ -58,4 +59,7 @@ export async function POST(req: NextRequest) {
   }).eq('id', userId)
 
   return NextResponse.json({ email, password })
+  } catch (e: any) {
+    return NextResponse.json({ error: e?.message || 'Server error' }, { status: 500 })
+  }
 }
