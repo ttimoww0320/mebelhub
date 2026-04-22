@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import Link from 'next/link'
+import PaymentButton from '@/components/payment-button'
 import OfferForm from './offer-form'
 import AcceptOffer from './accept-offer'
 import Chat from './chat'
@@ -34,6 +35,10 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   const { data: existingReview } = isOwner && order.status === 'completed'
     ? await supabase.from('reviews').select('id').eq('order_id', id).single()
+    : { data: null }
+
+  const { data: existingPayment } = isOwner && acceptedOffer
+    ? await supabase.from('payments').select('status').eq('offer_id', acceptedOffer.id).maybeSingle()
     : { data: null }
 
   const dims = [order.width_cm, order.height_cm, order.depth_cm].filter(Boolean)
@@ -97,6 +102,17 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       {/* Offer form for craftsmen */}
       {isCraftsman && !hasOffer && order.status === 'open' && (
         <OfferForm orderId={order.id} />
+      )}
+
+      {/* Payment deposit */}
+      {isOwner && acceptedOffer && order.status === 'open' && existingPayment?.status !== 'paid' && (
+        <PaymentButton offerId={acceptedOffer.id} price={Number(acceptedOffer.price)} />
+      )}
+
+      {isOwner && acceptedOffer && existingPayment?.status === 'paid' && order.status !== 'completed' && (
+        <div className="my-4 p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700 font-medium">
+          ✓ Депозит оплачен — заказ в работе
+        </div>
       )}
 
       {/* Review form */}
