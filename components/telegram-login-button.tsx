@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function TelegramLoginButton() {
   const ref = useRef<HTMLDivElement>(null)
@@ -21,8 +22,28 @@ export default function TelegramLoginButton() {
         return
       }
 
-      // Redirect to magic link — Supabase sets session and redirects back
-      window.location.href = data.magic_link
+      const supabase = createClient()
+      const { data: session, error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      })
+
+      if (error) {
+        alert('Ошибка входа: ' + error.message)
+        return
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single()
+
+      if (profile?.role === 'craftsman') {
+        window.location.href = '/dashboard'
+      } else {
+        window.location.href = '/orders'
+      }
     }
 
     const script = document.createElement('script')
