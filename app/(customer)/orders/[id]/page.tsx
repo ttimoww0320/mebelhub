@@ -38,6 +38,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   const dims = [order.width_cm, order.height_cm, order.depth_cm].filter(Boolean)
 
+  // Sort offers: accepted first, then by craftsman rating desc
+  const sortedOffers = [...(order.offers ?? [])].sort((a: any, b: any) => {
+    if (a.status === 'accepted') return -1
+    if (b.status === 'accepted') return 1
+    return (b.craftsman?.rating ?? 0) - (a.craftsman?.rating ?? 0)
+  })
+
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
       {/* Order header */}
@@ -102,11 +109,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <h2 className="text-xl font-semibold mb-4">
           Предложения мастеров ({order.offers?.length || 0})
         </h2>
-        {!order.offers?.length ? (
+        {!sortedOffers.length ? (
           <p className="text-gray-400 text-center py-10">Пока нет предложений</p>
         ) : (
           <div className="space-y-4">
-            {order.offers.map((offer: any) => (
+            {sortedOffers.map((offer: any) => (
               <Card key={offer.id} className={offer.status === 'accepted' ? 'border-green-400' : ''}>
                 <CardContent className="pt-4">
                   <div className="flex items-start gap-3">
@@ -120,7 +127,10 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                             {offer.craftsman?.full_name}
                           </Link>
                           {(offer.craftsman?.rating ?? 0) > 0 && (
-                            <span className="text-xs text-gray-400">★ {offer.craftsman?.rating?.toFixed(1)}</span>
+                            <span className="text-xs text-yellow-600 font-medium">★ {offer.craftsman?.rating?.toFixed(1)}</span>
+                          )}
+                          {offer.craftsman?.verified && (
+                            <span className="text-xs text-green-600 font-medium">✓ Проверен</span>
                           )}
                         </div>
                         {offer.status === 'accepted' && (

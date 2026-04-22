@@ -14,6 +14,11 @@ export default async function CraftsmanDashboard({
   const { type, budget } = await searchParams
   const supabase = await createClient()
 
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: craftsmanProfile } = user
+    ? await supabase.from('profiles').select('full_name, rating, reviews_count, verified, verification_status').eq('id', user.id).single()
+    : { data: null }
+
   let query = supabase
     .from('orders')
     .select('*, customer:profiles!customer_id(full_name), offers(count)')
@@ -28,11 +33,29 @@ export default async function CraftsmanDashboard({
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold">Лента заказов</h1>
           <p className="text-gray-500 text-sm mt-1">Открытые заказы от заказчиков Ташкента</p>
         </div>
+        {craftsmanProfile && (
+          <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-2 text-sm">
+            {(craftsmanProfile.rating ?? 0) > 0 ? (
+              <span className="text-yellow-600 font-semibold">★ {Number(craftsmanProfile.rating).toFixed(1)}</span>
+            ) : (
+              <span className="text-gray-400">Нет рейтинга</span>
+            )}
+            {craftsmanProfile.reviews_count > 0 && (
+              <span className="text-gray-400">{craftsmanProfile.reviews_count} отзывов</span>
+            )}
+            {craftsmanProfile.verified && (
+              <span className="text-green-600 font-medium">✓ Проверен</span>
+            )}
+            {!craftsmanProfile.verified && craftsmanProfile.verification_status === 'none' && (
+              <Link href="/profile" className="text-orange-500 hover:underline">Пройти верификацию →</Link>
+            )}
+          </div>
+        )}
       </div>
       <Suspense>
         <Filters />

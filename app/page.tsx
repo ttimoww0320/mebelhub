@@ -186,6 +186,7 @@ export default function HomePage() {
           <span className="font-bold text-orange-600 text-base">MebelHub</span>
           <span>© 2025 MebelHub — Ташкент, Узбекистан</span>
           <div className="flex gap-4">
+            <Link href="/masters" className="hover:text-gray-600">Мастера</Link>
             <Link href="/login" className="hover:text-gray-600">Войти</Link>
             <Link href="/register" className="hover:text-gray-600">Регистрация</Link>
           </div>

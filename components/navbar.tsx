@@ -37,6 +37,7 @@ export default function Navbar() {
     ? [
         { href: '/orders', label: 'Мои заказы' },
         { href: '/orders/new', label: '+ Новый заказ' },
+        { href: '/masters', label: 'Мастера' },
         { href: '/settings', label: 'Настройки' },
       ]
     : [
