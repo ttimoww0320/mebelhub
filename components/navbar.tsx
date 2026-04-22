@@ -42,6 +42,7 @@ export default function Navbar() {
       ]
     : [
         { href: '/dashboard', label: 'Лента заказов' },
+        { href: '/my-orders', label: 'Мои заказы' },
         { href: '/profile', label: 'Мой профиль' },
       ]
 

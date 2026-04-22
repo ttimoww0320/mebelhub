@@ -19,6 +19,14 @@ export default async function CraftsmanDashboard({
     ? await supabase.from('profiles').select('full_name, rating, reviews_count, verified, verification_status').eq('id', user.id).single()
     : { data: null }
 
+  // Count active orders (accepted offers in_progress)
+  const { count: activeCount } = user
+    ? await supabase.from('offers')
+        .select('id', { count: 'exact', head: true })
+        .eq('craftsman_id', user.id)
+        .eq('status', 'accepted')
+    : { count: 0 }
+
   let query = supabase
     .from('orders')
     .select('*, customer:profiles!customer_id(full_name), offers(count)')
@@ -33,6 +41,13 @@ export default async function CraftsmanDashboard({
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+      {(activeCount ?? 0) > 0 && (
+        <div className="mb-5 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700 flex items-center justify-between">
+          <span>У вас <strong>{activeCount}</strong> активных заказа в работе</span>
+          <Link href="/my-orders" className="font-semibold hover:underline">Смотреть →</Link>
+        </div>
+      )}
+
       <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold">Лента заказов</h1>
