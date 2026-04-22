@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -10,7 +8,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function OfferForm({ orderId }: { orderId: string }) {
-  const router = useRouter()
   const [price, setPrice] = useState('')
   const [days, setDays] = useState('')
   const [comment, setComment] = useState('')
@@ -34,7 +31,7 @@ export default function OfferForm({ orderId }: { orderId: string }) {
       return
     }
 
-    router.refresh()
+    window.location.reload()
   }
 
   return (
@@ -44,7 +41,7 @@ export default function OfferForm({ orderId }: { orderId: string }) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Цена (сум) *</Label>
               <Input type="number" placeholder="3 500 000" value={price} onChange={e => setPrice(e.target.value)} required />
