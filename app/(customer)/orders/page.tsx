@@ -30,11 +30,11 @@ export default async function CustomerOrdersPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Мои заказы</h1>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+      <div className="flex items-center justify-between mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold">Мои заказы</h1>
         <Link href="/orders/new">
-          <Button className="bg-orange-600 hover:bg-orange-700">+ Новый заказ</Button>
+          <Button className="bg-orange-600 hover:bg-orange-700 text-sm sm:text-base">+ Новый заказ</Button>
         </Link>
       </div>
 

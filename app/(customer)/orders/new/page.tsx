@@ -101,7 +101,7 @@ export default function NewOrderPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
       <h1 className="text-2xl font-bold mb-8">Новый заказ</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
 
@@ -147,7 +147,7 @@ export default function NewOrderPage() {
         <Card>
           <CardHeader><CardTitle>Размеры (в см)</CardTitle></CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Ширина</Label>
                 <Input type="number" placeholder="200" value={form.width_cm} onChange={e => set('width_cm', e.target.value)} />
@@ -186,7 +186,7 @@ export default function NewOrderPage() {
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Материал</Label>
                 <Input placeholder="МДФ, дерево, ЛДСП..." value={form.material} onChange={e => set('material', e.target.value)} />
@@ -202,7 +202,7 @@ export default function NewOrderPage() {
         <Card>
           <CardHeader><CardTitle>Бюджет и сроки</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Бюджет от (сум)</Label>
                 <Input type="number" placeholder="2 000 000" value={form.budget_min} onChange={e => set('budget_min', e.target.value)} />

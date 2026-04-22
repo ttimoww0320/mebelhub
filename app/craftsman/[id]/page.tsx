@@ -48,7 +48,7 @@ export default async function CraftsmanPublicPage({ params }: { params: Promise<
         </div>
       </nav>
 
-      <div className="max-w-3xl mx-auto px-6 py-10">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         {/* Profile header */}
         <Card className="mb-6">
           <CardContent className="pt-6">
@@ -91,7 +91,7 @@ export default async function CraftsmanPublicPage({ params }: { params: Promise<
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
           {[
             { label: 'Выполнено заказов', value: completedOffers?.length ?? 0 },
             { label: 'Рейтинг', value: (craftsman.rating ?? 0) > 0 ? `${craftsman.rating?.toFixed(1)} ★` : '—' },

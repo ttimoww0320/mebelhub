@@ -39,7 +39,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const dims = [order.width_cm, order.height_cm, order.depth_cm].filter(Boolean)
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-10">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
       {/* Order header */}
       <div className="mb-6">
         <div className="flex items-start justify-between mb-2">
@@ -67,7 +67,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <p className="text-sm text-gray-400 mb-1">Описание</p>
             <p className="text-gray-800">{order.description}</p>
           </div>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div><span className="text-gray-400">Тип: </span>{order.furniture_type}</div>
             {order.style && <div><span className="text-gray-400">Стиль: </span>{order.style}</div>}
             {dims.length > 0 && <div><span className="text-gray-400">Размеры: </span>{dims.join(' × ')} см</div>}
