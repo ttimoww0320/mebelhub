@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import TelegramLoginButton from '@/components/telegram-login-button'
 
 function RegisterForm() {
   const router = useRouter()
@@ -128,19 +127,6 @@ function RegisterForm() {
               {loading ? 'Создаём аккаунт...' : 'Зарегистрироваться'}
             </Button>
           </form>
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-gray-400">или войдите через</span>
-            </div>
-          </div>
-
-          <div className="flex justify-center">
-            <TelegramLoginButton />
-          </div>
-
           <p className="text-center text-sm text-gray-500 mt-4">
             Уже есть аккаунт?{' '}
             <Link href="/login" className="text-orange-600 hover:underline">
