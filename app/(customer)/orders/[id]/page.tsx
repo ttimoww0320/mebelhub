@@ -73,9 +73,19 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           )}
           {order.status === 'completed' && (
             <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700 font-semibold">
-              ✅ Сделка закрыта!{existingReview ? ' Спасибо за ваш отзыв.' : ' Пожалуйста, оцените работу мастера.'}
+              ✅ Сделка закрыта!{existingReview ? ' Спасибо за ваш отзыв.' : ' Оцените работу мастера ниже 👇'}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── REVIEW FORM (right after banner, most visible spot) ── */}
+      {isOwner && order.status === 'completed' && !existingReview && acceptedOffer && (
+        <ReviewForm orderId={order.id} craftsmanId={acceptedOffer.craftsman_id} />
+      )}
+      {isOwner && order.status === 'completed' && existingReview && (
+        <div className="mb-6 p-4 bg-gray-50 border rounded-xl text-sm text-gray-500 text-center">
+          ✓ Ваш отзыв отправлен. Спасибо!
         </div>
       )}
 
@@ -192,16 +202,6 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </Card>
       )}
 
-      {/* ── REVIEW FORM ── */}
-      {isOwner && order.status === 'completed' && !existingReview && acceptedOffer && (
-        <ReviewForm orderId={order.id} craftsmanId={acceptedOffer.craftsman_id} />
-      )}
-
-      {isOwner && order.status === 'completed' && existingReview && (
-        <div className="mb-6 p-4 bg-gray-50 border rounded-xl text-sm text-gray-500 text-center">
-          Ваш отзыв отправлен. Спасибо!
-        </div>
-      )}
 
       {/* ── OFFERS LIST ── */}
       {(order.status === 'open' || sortedOffers.length > 0) && (
