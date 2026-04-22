@@ -85,13 +85,15 @@ export default function CraftsmanProfilePage() {
 
     const { data: urlData } = supabase.storage.from('verification-docs').getPublicUrl(path)
 
-    await supabase.from('profiles').update({
-      verification_status: 'pending',
-      verification_doc_url: urlData.publicUrl,
-    }).eq('id', user.id)
+    // Use API to update status + notify admin
+    await fetch('/api/verification/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ docUrl: urlData.publicUrl }),
+    })
 
     setProfile(prev => prev ? { ...prev, verification_status: 'pending' } : prev)
-    setDocMsg('Документ отправлен! Проверка займёт 1-2 дня.')
+    setDocMsg('Документ отправлен! Администратор проверит в течение 1-2 дней.')
     setDocFile(null)
     setDocLoading(false)
   }
