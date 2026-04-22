@@ -25,7 +25,7 @@ export default async function CustomerOrdersPage() {
 
   const { data: orders } = await supabase
     .from('orders')
-    .select('*, offers(id, status, count)')
+    .select('*, offers(id, status)')
     .eq('customer_id', user?.id)
     .order('created_at', { ascending: false })
 
