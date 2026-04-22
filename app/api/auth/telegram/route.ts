@@ -32,28 +32,30 @@ export async function POST(req: NextRequest) {
   const password = makePassword(String(id))
   const admin = createAdminClient()
 
-  // Find or create user
-  const { data: existing } = await admin.auth.admin.listUsers()
-  const existingUser = existing?.users?.find(u => u.email === email)
+  // Try to create user, ignore if already exists
+  let userId: string | null = null
 
-  if (!existingUser) {
-    const { error } = await admin.auth.admin.createUser({
-      email,
-      email_confirm: true,
-      password,
-      user_metadata: { full_name: fullName, role: 'customer' },
-    })
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  const { data: newUser, error: createError } = await admin.auth.admin.createUser({
+    email,
+    email_confirm: true,
+    password,
+    user_metadata: { full_name: fullName, role: 'customer' },
+  })
+
+  if (createError) {
+    // User already exists — find them
+    const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 })
+    const found = list?.users?.find(u => u.email === email)
+    if (!found) return NextResponse.json({ error: 'User not found: ' + createError.message }, { status: 400 })
+    userId = found.id
+  } else {
+    userId = newUser.user.id
   }
 
-  // Update profile
-  const userId = existingUser?.id || (await admin.auth.admin.listUsers()).data.users.find(u => u.email === email)?.id
-  if (userId) {
-    await admin.from('profiles').update({
-      telegram_chat_id: Number(id),
-      full_name: fullName,
-    }).eq('id', userId)
-  }
+  await admin.from('profiles').update({
+    telegram_chat_id: Number(id),
+    full_name: fullName,
+  }).eq('id', userId)
 
   return NextResponse.json({ email, password })
 }
