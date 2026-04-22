@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import Link from 'next/link'
 import OfferForm from './offer-form'
 import AcceptOffer from './accept-offer'
 import Chat from './chat'
@@ -114,7 +115,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     </Avatar>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium">{offer.craftsman?.full_name}</span>
+                        <div className="flex items-center gap-2">
+                          <Link href={`/craftsman/${offer.craftsman_id}`} className="font-medium hover:text-orange-600 hover:underline">
+                            {offer.craftsman?.full_name}
+                          </Link>
+                          {(offer.craftsman?.rating ?? 0) > 0 && (
+                            <span className="text-xs text-gray-400">★ {offer.craftsman?.rating?.toFixed(1)}</span>
+                          )}
+                        </div>
                         {offer.status === 'accepted' && (
                           <Badge className="bg-green-100 text-green-800">Принято</Badge>
                         )}
