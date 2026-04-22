@@ -12,12 +12,14 @@ import type { Profile } from '@/types'
 export default function Navbar() {
   const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
+      setUserEmail(user.email ?? null)
       supabase.from('profiles').select('*').eq('id', user.id).single()
         .then(({ data }) => setProfile(data))
     })
@@ -33,7 +35,7 @@ export default function Navbar() {
 
   if (!profile) return null
 
-  const isAdmin = profile.email === 'toirovtimurmalik@gmail.com'
+  const isAdmin = userEmail === 'toirovtimurmalik@gmail.com'
 
   const links = profile.role === 'customer'
     ? [
