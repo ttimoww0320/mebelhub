@@ -1,14 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
 const PAYME_ENABLED = !!process.env.NEXT_PUBLIC_PAYME_ENABLED
 const CLICK_ENABLED = !!process.env.NEXT_PUBLIC_CLICK_ENABLED
 
 export default function PaymentButton({ offerId, price }: { offerId: string; price: number }) {
-  const router = useRouter()
   const [loading, setLoading] = useState<'payme' | 'click' | 'cash' | null>(null)
   const [confirmed, setConfirmed] = useState(false)
 
@@ -37,7 +35,7 @@ export default function PaymentButton({ offerId, price }: { offerId: string; pri
     })
     const data = await res.json()
     if (data.ok) {
-      router.refresh()
+      window.location.reload()
     } else {
       alert(data.error || 'Ошибка')
       setLoading(null)

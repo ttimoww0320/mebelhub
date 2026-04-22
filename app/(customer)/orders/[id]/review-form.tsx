@@ -1,14 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function ReviewForm({ orderId, craftsmanId }: { orderId: string; craftsmanId: string }) {
-  const router = useRouter()
   const [rating, setRating] = useState(0)
   const [hovered, setHovered] = useState(0)
   const [comment, setComment] = useState('')
@@ -45,7 +43,7 @@ export default function ReviewForm({ orderId, craftsmanId }: { orderId: string; 
       }).eq('id', craftsmanId)
     }
 
-    router.refresh()
+    window.location.reload()
   }
 
   return (
