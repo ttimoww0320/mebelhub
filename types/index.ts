@@ -14,6 +14,9 @@ export interface Profile {
   created_at: string
   telegram_chat_id: number | null
   telegram_token: string | null
+  verified: boolean
+  verification_status: 'none' | 'pending' | 'verified' | 'rejected'
+  verification_doc_url: string | null
 }
 
 export interface Order {

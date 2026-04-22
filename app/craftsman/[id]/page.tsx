@@ -62,6 +62,9 @@ export default async function CraftsmanPublicPage({ params }: { params: Promise<
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <h1 className="text-2xl font-bold">{craftsman.full_name}</h1>
                   <Badge className="bg-orange-100 text-orange-700">Мастер</Badge>
+                  {craftsman.verified && (
+                    <Badge className="bg-green-100 text-green-700">Проверен ✓</Badge>
+                  )}
                 </div>
 
                 {(craftsman.rating ?? 0) > 0 ? (
