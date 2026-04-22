@@ -33,12 +33,15 @@ export default function Navbar() {
 
   if (!profile) return null
 
+  const isAdmin = profile.email === 'toirovtimurmalik@gmail.com'
+
   const links = profile.role === 'customer'
     ? [
         { href: '/orders', label: 'Мои заказы' },
         { href: '/orders/new', label: '+ Новый заказ' },
         { href: '/masters', label: 'Мастера' },
         { href: '/settings', label: 'Настройки' },
+        ...(isAdmin ? [{ href: '/admin', label: '⚙️ Админ' }] : []),
       ]
     : [
         { href: '/dashboard', label: 'Лента заказов' },
