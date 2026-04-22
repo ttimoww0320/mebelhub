@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import Link from 'next/link'
 import PaymentButton from '@/components/payment-button'
+import CompleteOrder from './complete-order'
 import OfferForm from './offer-form'
 import AcceptOffer from './accept-offer'
 import Chat from './chat'
@@ -145,8 +146,16 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       )}
 
       {isOwner && acceptedOffer && existingPayment?.status === 'paid' && order.status !== 'completed' && (
-        <div className="my-4 p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700 font-medium">
-          ✓ Депозит оплачен — заказ в работе
+        <div className="my-4 p-4 bg-green-50 border border-green-200 rounded-xl space-y-3">
+          <p className="text-sm text-green-700 font-medium">✓ Депозит оплачен — заказ в работе</p>
+          <CompleteOrder orderId={order.id} />
+        </div>
+      )}
+
+      {/* Completed: review prompt */}
+      {isOwner && order.status === 'completed' && (
+        <div className="my-4 p-4 bg-gray-50 border rounded-xl text-sm text-gray-600">
+          🎉 Заказ завершён! {existingReview ? 'Спасибо за ваш отзыв.' : 'Оцените работу мастера — это поможет другим заказчикам.'}
         </div>
       )}
 
