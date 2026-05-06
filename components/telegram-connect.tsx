@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { G, BG, BG2, BORDER, MUTE, SUCCESS } from '@/lib/tokens'
 
 export default function TelegramConnect({ connected }: { connected: boolean }) {
   const [loading, setLoading] = useState(false)
@@ -18,7 +18,7 @@ export default function TelegramConnect({ connected }: { connected: boolean }) {
 
   if (done) {
     return (
-      <div className="flex items-center gap-2 text-sm text-green-600">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: SUCCESS }}>
         <span>✓</span>
         <span>Telegram подключён</span>
       </div>
@@ -26,14 +26,24 @@ export default function TelegramConnect({ connected }: { connected: boolean }) {
   }
 
   return (
-    <Button
+    <button
       type="button"
-      variant="outline"
-      className="border-blue-400 text-blue-600 hover:bg-blue-50"
       onClick={handleConnect}
       disabled={loading}
+      style={{
+        background: loading ? BG2 : G,
+        color: loading ? MUTE : BG,
+        border: 'none',
+        padding: '12px 20px',
+        fontSize: 13,
+        fontWeight: 600,
+        letterSpacing: '0.06em',
+        cursor: loading ? 'default' : 'pointer',
+        borderRadius: 2,
+        fontFamily: 'inherit',
+      }}
     >
-      {loading ? 'Открываем...' : '📱 Подключить Telegram'}
-    </Button>
+      {loading ? 'Открываем…' : '📱 Подключить Telegram'}
+    </button>
   )
 }

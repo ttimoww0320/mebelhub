@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: ADMIN_TELEGRAM_ID,
-        text: `📋 Новая заявка на верификацию!\n\nМастер: ${profile?.full_name}\nID: ${user.id}\n\nПроверьте на: https://mebelhub-production.up.railway.app/admin`,
+        text: `📋 Новая заявка на верификацию!\n\nМастер: ${profile?.full_name}\nID: ${user.id}\n\nПроверьте: ${process.env.NEXT_PUBLIC_APP_URL}/admin`,
       }),
     })
   }

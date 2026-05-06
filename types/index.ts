@@ -47,7 +47,7 @@ export interface Offer {
   craftsman_id: string
   price: number
   delivery_days: number
-  comment: string
+  comment: string | null
   status: 'pending' | 'accepted' | 'rejected'
   created_at: string
   craftsman?: Profile

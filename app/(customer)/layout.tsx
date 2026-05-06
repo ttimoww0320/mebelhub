@@ -1,10 +1,10 @@
-import Navbar from '@/components/navbar'
+import PublicNav from '@/components/public-nav'
 
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <Navbar />
+    <div>
+      <PublicNav />
       <main>{children}</main>
-    </>
+    </div>
   )
 }

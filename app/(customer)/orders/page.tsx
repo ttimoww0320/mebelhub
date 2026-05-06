@@ -1,97 +1,118 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import type { Order } from '@/types'
+import { G, BG, BG2, BORDER, TEXT, DIM, MUTE, MONO, HEAD } from '@/lib/tokens'
+import type { Order, Offer } from '@/types'
 
-const statusLabel: Record<Order['status'], string> = {
-  open: 'Открыт',
+type OrderWithOffers = Order & { offers: Offer[] }
+
+const STATUS_RU: Record<Order['status'], string> = {
+  open:        'Сбор офферов',
   in_progress: 'В работе',
-  completed: 'Завершён',
-  cancelled: 'Отменён',
-}
-
-const statusColor: Record<Order['status'], string> = {
-  open: 'bg-green-100 text-green-800',
-  in_progress: 'bg-blue-100 text-blue-800',
-  completed: 'bg-gray-100 text-gray-800',
-  cancelled: 'bg-red-100 text-red-800',
+  completed:   'Завершён',
+  cancelled:   'Отменён',
 }
 
 export default async function CustomerOrdersPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
-  const { data: orders } = await supabase
-    .from('orders')
-    .select('*, offers(id, status)')
-    .eq('customer_id', user?.id)
-    .order('created_at', { ascending: false })
+  const [{ data: profile }, { data: orders }] = await Promise.all([
+    supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle(),
+    supabase
+      .from('orders')
+      .select('*, offers(id, status, price, delivery_days, craftsman:profiles!craftsman_id(full_name))')
+      .eq('customer_id', user.id)
+      .order('created_at', { ascending: false }),
+  ])
 
-  // Find which orders need payment (have accepted offer but no paid payment)
-  const orderIds = orders?.map(o => o.id) ?? []
-  const { data: paidPayments } = orderIds.length
-    ? await supabase.from('payments').select('order_id').in('order_id', orderIds).eq('status', 'paid')
-    : { data: [] }
-  const paidOrderIds = new Set(paidPayments?.map((p: any) => p.order_id) ?? [])
+  const firstName = profile?.full_name?.split(' ')[0] ?? 'Привет'
+  const allOrders = (orders as OrderWithOffers[] | null) ?? []
+
+  const activeCount   = allOrders.filter(o => o.status === 'open' || o.status === 'in_progress').length
+  const offersTotal   = allOrders.reduce((s, o) => s + (o.offers?.length ?? 0), 0)
+  const inProgressCount = allOrders.filter(o => o.status === 'in_progress').length
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-      <div className="flex items-center justify-between mb-6 sm:mb-8">
-        <h1 className="text-xl sm:text-2xl font-bold">Мои заказы</h1>
-        <Link href="/orders/new">
-          <Button className="bg-orange-600 hover:bg-orange-700 text-sm sm:text-base">+ Новый заказ</Button>
-        </Link>
+    <div style={{ background: BG, color: TEXT, minHeight: '100vh' }}>
+      <div style={{ padding: '40px 40px', borderBottom: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'space-between', alignItems: 'end' }}>
+        <div>
+          <div style={{ fontFamily: MONO, fontSize: 11, color: G, letterSpacing: '0.14em', marginBottom: 10 }}>§ ЛИЧНЫЙ КАБИНЕТ</div>
+          <h1 style={{ fontFamily: HEAD, fontSize: 60, fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>
+            Добро пожаловать,<br /><em style={{ color: G }}>{firstName}</em>
+          </h1>
+        </div>
+        <Link href="/orders/new" style={{ background: G, color: BG, textDecoration: 'none', padding: '14px 22px', fontSize: 13, fontWeight: 600, borderRadius: 2 }}>+ Новый заказ</Link>
       </div>
 
-      {!orders?.length ? (
-        <div className="text-center py-20 text-gray-400">
-          <p className="text-lg mb-4">У вас пока нет заказов</p>
-          <Link href="/orders/new">
-            <Button className="bg-orange-600 hover:bg-orange-700">Создать первый заказ</Button>
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {orders.map((order) => {
-            const offersArr = Array.isArray(order.offers) ? order.offers : []
-            const offerCount = offersArr.length
-            const hasAccepted = offersArr.some((o: any) => o.status === 'accepted')
-            const needsPayment = hasAccepted && !paidOrderIds.has(order.id)
+      {/* Stats row */}
+      <div style={{ padding: '40px 40px 0', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, background: BORDER }}>
+        {([
+          [String(activeCount),      'активных',  'заказов'],
+          [String(offersTotal),       'офферов',   'получено'],
+          [String(inProgressCount),   'в работе',  'прямо сейчас'],
+          [String(allOrders.length),  'заказов',   'всего'],
+        ] as const).map(([n, l1, l2], i) => (
+          <div key={i} style={{ background: BG, padding: 28 }}>
+            <div style={{ fontFamily: HEAD, fontSize: 52, fontWeight: 300, letterSpacing: '-0.02em', color: G }}>{n}</div>
+            <div style={{ fontSize: 12, color: DIM, marginTop: 6 }}>{l1}</div>
+            <div style={{ fontSize: 11, color: MUTE, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{l2}</div>
+          </div>
+        ))}
+      </div>
 
-            return (
-              <Link href={`/orders/${order.id}`} key={order.id}>
-                <Card className={`hover:shadow-md transition-shadow cursor-pointer ${needsPayment ? 'border-orange-300' : ''}`}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between gap-2 flex-wrap">
-                      <CardTitle className="text-base sm:text-lg">{order.title}</CardTitle>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {needsPayment && (
-                          <Badge className="bg-orange-100 text-orange-700 animate-pulse">⚡ Оплатить депозит</Badge>
-                        )}
-                        <Badge className={statusColor[order.status as Order['status']]}>
-                          {statusLabel[order.status as Order['status']]}
-                        </Badge>
-                      </div>
+      {/* Orders list */}
+      <div style={{ padding: '40px' }}>
+        <div style={{ fontFamily: MONO, fontSize: 11, color: G, letterSpacing: '0.14em', marginBottom: 20 }}>§ ВАШИ ЗАКАЗЫ</div>
+
+        {allOrders.length === 0 ? (
+          <div style={{ padding: '60px 0', textAlign: 'center', color: MUTE }}>
+            <div style={{ fontFamily: HEAD, fontSize: 32, fontWeight: 300, marginBottom: 16 }}>Заказов пока нет</div>
+            <Link href="/orders/new" style={{ background: G, color: BG, textDecoration: 'none', padding: '14px 22px', fontSize: 13, fontWeight: 600, borderRadius: 2 }}>
+              Разместить первый заказ →
+            </Link>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {allOrders.map((o, i) => {
+              const accepted = o.offers?.find(of => of.status === 'accepted')
+              const pendingCount = o.offers?.filter(of => of.status === 'pending').length ?? 0
+              const masterName = (accepted as any)?.craftsman?.full_name ?? null
+
+              return (
+                <Link key={o.id} href={`/orders/${o.id}`} style={{
+                  padding: '28px 0',
+                  borderTop: `1px solid ${BORDER}`,
+                  ...(i === allOrders.length - 1 ? { borderBottom: `1px solid ${BORDER}` } : {}),
+                  display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 24, alignItems: 'center',
+                  textDecoration: 'none', color: TEXT,
+                }}>
+                  <div>
+                    <div style={{ fontFamily: HEAD, fontSize: 24, marginBottom: 6 }}>{o.title}</div>
+                    <div style={{ fontSize: 12, color: MUTE }}>
+                      {masterName
+                        ? `Мастер: ${masterName}`
+                        : pendingCount > 0
+                          ? `${pendingCount} ${pendingCount === 1 ? 'оффер ожидает' : 'офферов ожидают'} рассмотрения`
+                          : 'Ждём офферов от мастеров'}
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-500 text-sm line-clamp-2 mb-3">{order.description}</p>
-                    <div className="flex items-center gap-4 text-sm text-gray-400">
-                      <span>{order.furniture_type}</span>
-                      {order.budget_max && <span>до {Number(order.budget_max).toLocaleString()} сум</span>}
-                      <span className={offerCount > 0 ? 'text-orange-600 font-medium' : ''}>
-                        {offerCount} {offerCount === 1 ? 'предложение' : offerCount > 1 && offerCount < 5 ? 'предложения' : 'предложений'}
-                      </span>
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: MONO, fontSize: 10, color: G, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                      {STATUS_RU[o.status]}
                     </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            )
-          })}
-        </div>
-      )}
+                  </div>
+                  <div style={{ fontFamily: HEAD, fontSize: 22, color: accepted ? G : DIM }}>
+                    {accepted ? `$${(accepted as any).price?.toLocaleString()}` : o.budget_min ? `$${o.budget_min.toLocaleString()}+` : '—'}
+                  </div>
+                  <div style={{ fontSize: 18, color: DIM }}>→</div>
+                </Link>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
