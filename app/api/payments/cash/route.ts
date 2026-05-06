@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  await admin.from('orders').update({ status: 'in_progress' }).eq('id', offer.order_id)
+  await admin.from('orders').update({ status: 'in_progress' }).eq('id', offer.order_id).eq('status', 'open')
 
   return NextResponse.json({ ok: true })
 }

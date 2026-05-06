@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MebelHub — премиум редизайн</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #0A0D12; color: #E8E6E1;
+    font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; -webkit-font-smoothing: antialiased; }
+  button, input, select, textarea { font-family: inherit; }
+  input::placeholder, textarea::placeholder { color: rgba(232,230,225,0.35); }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: #0A0D12; }
+  ::-webkit-scrollbar-thumb { background: #2a2e36; }
+  ::-webkit-scrollbar-thumb:hover { background: #3a3e46; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  a { color: inherit; text-decoration: none; }
+  h1, h2, h3, h4, p { margin: 0; }
+  select { appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%23E4B668' stroke-width='1.2' fill='none'/></svg>"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px !important; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="proto/data.jsx"></script>
+<script type="text/babel" src="proto/work-illustrations.jsx"></script>
+<script type="text/babel" src="proto/shared.jsx"></script>
+<script type="text/babel" src="proto/page-home.jsx"></script>
+<script type="text/babel" src="proto/page-masters.jsx"></script>
+<script type="text/babel" src="proto/page-order-dashboard.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accentColor": "#C9A35A",
+  "headingFont": "Fraunces",
+  "backgroundTone": "graphite"
+}/*EDITMODE-END*/;
+
+const BG_TONES = {
+  graphite: { bg: '#0A0D12', bgElev: '#11151C', bgSubtle: '#161B23' },
+  obsidian: { bg: '#07090C', bgElev: '#0E1115', bgSubtle: '#13171D' },
+  steel:    { bg: '#0F1318', bgElev: '#181D24', bgSubtle: '#1E242C' },
+  midnight: { bg: '#0A0F1B', bgElev: '#121827', bgSubtle: '#1A2034' },
+};
+
+const App = () => {
+  const [route, setRoute] = React.useState(() => {
+    return localStorage.getItem('mh_route') || 'home';
+  });
+  const [tweaksOn, setTweaksOn] = React.useState(false);
+  const [tweaks, setTweaks] = React.useState(TWEAK_DEFAULTS);
+
+  React.useEffect(() => { localStorage.setItem('mh_route', route); window.scrollTo(0, 0); }, [route]);
+
+  // Apply tweaks to theme
+  React.useEffect(() => {
+    const tone = BG_TONES[tweaks.backgroundTone] || BG_TONES.graphite;
+    mhTheme.gold = tweaks.accentColor;
+    mhTheme.goldBg = tweaks.accentColor + '1A';
+    mhTheme.bg = tone.bg;
+    mhTheme.bgElev = tone.bgElev;
+    mhTheme.bgSubtle = tone.bgSubtle;
+    document.body.style.background = tone.bg;
+    document.documentElement.style.setProperty('--mh-gold', tweaks.accentColor);
+  }, [tweaks]);
+
+  // Edit-mode protocol
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const d = e.data || {};
+      if (d.type === '__activate_edit_mode') setTweaksOn(true);
+      if (d.type === '__deactivate_edit_mode') setTweaksOn(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const updateTweak = (key, value) => {
+    const next = { ...tweaks, [key]: value };
+    setTweaks(next);
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [key]: value } }, '*');
+  };
+
+  const nav = (target) => setRoute(target);
+
+  // Parse route
+  let page = null;
+  const currentNavId = route.startsWith('master:') ? 'masters'
+    : route.startsWith('chat:') ? 'dashboard'
+    : route;
+
+  if (route === 'home') page = <HomePage onNav={nav}/>;
+  else if (route === 'masters') page = <MastersPage onNav={nav}/>;
+  else if (route === 'works') page = <WorksPage onNav={nav}/>;
+  else if (route === 'order') page = <OrderPage onNav={nav}/>;
+  else if (route === 'dashboard') page = <DashboardPage onNav={nav}/>;
+  else if (route.startsWith('master:')) page = <MasterPage masterId={route.slice(7)} onNav={nav}/>;
+  else if (route.startsWith('chat:')) page = <ChatPage masterId={route.slice(5)} onNav={nav}/>;
+  else page = <HomePage onNav={nav}/>;
+
+  return (
+    <div data-screen-label={route} style={{ minHeight: '100vh', background: mhTheme.bg, color: mhTheme.text, fontFamily: 'Inter, sans-serif' }}>
+      <MHNav current={currentNavId} onNav={nav} onOrder={() => nav('order')}/>
+      <main key={route}>{page}</main>
+      <MHFooter/>
+
+      {tweaksOn && (
+        <div style={{
+          position: 'fixed', bottom: 20, right: 20, width: 280,
+          background: 'rgba(17,21,28,0.96)', border: `1px solid ${mhTheme.gold}`,
+          backdropFilter: 'blur(12px)', padding: 20, zIndex: 100, borderRadius: 4,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+        }}>
+          <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: mhTheme.gold, letterSpacing: '0.16em', marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+            <span>TWEAKS</span>
+            <span style={{ color: mhTheme.textMute }}>v1</span>
+          </div>
+
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: 11, color: mhTheme.textDim, marginBottom: 8, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Акцентный цвет</div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {['#E4B668', '#C9A35A', '#D4A574', '#B8956A', '#8FA3B8', '#A67442'].map(c => (
+                <div key={c} onClick={() => updateTweak('accentColor', c)} style={{
+                  width: 32, height: 32, background: c,
+                  border: tweaks.accentColor === c ? `2px solid ${mhTheme.text}` : `1px solid ${mhTheme.border}`,
+                  cursor: 'pointer',
+                }}/>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: 11, color: mhTheme.textDim, marginBottom: 8, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Фоновый тон</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
+              {Object.entries(BG_TONES).map(([k, v]) => (
+                <button key={k} onClick={() => updateTweak('backgroundTone', k)} style={{
+                  background: v.bg, color: mhTheme.text,
+                  border: tweaks.backgroundTone === k ? `1px solid ${mhTheme.gold}` : `1px solid ${mhTheme.border}`,
+                  padding: '10px 8px', fontSize: 11, cursor: 'pointer', textTransform: 'capitalize',
+                }}>{k}</button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: 11, color: mhTheme.textDim, marginBottom: 8, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Быстрая навигация</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4 }}>
+              {[['home','Главная'],['masters','Мастера'],['master:m01','Мастер'],['order','Заказ'],['dashboard','Кабинет'],['chat:m01','Чат'],['works','Работы']].map(([r, l]) => (
+                <button key={r} onClick={() => nav(r)} style={{
+                  background: route === r ? mhTheme.gold : 'transparent', color: route === r ? mhTheme.bg : mhTheme.textDim,
+                  border: `1px solid ${mhTheme.border}`, padding: '6px', fontSize: 11, cursor: 'pointer',
+                }}>{l}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
