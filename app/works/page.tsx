@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import Link from 'next/link'
 import PublicNav from '@/components/public-nav'
 import { createAdminClient } from '@/lib/supabase/admin'

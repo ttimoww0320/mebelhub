@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import Link from 'next/link'
 import HeroAnimation from '@/components/hero-animation'
 import { WorkIllustration } from '@/components/work-illustration'

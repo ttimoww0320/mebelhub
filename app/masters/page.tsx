@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import MastersList from '@/components/masters-list'
 import PublicNav from '@/components/public-nav'
 import { createAdminClient } from '@/lib/supabase/admin'
