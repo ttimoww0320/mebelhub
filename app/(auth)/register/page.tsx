@@ -71,7 +71,7 @@ function RegisterForm() {
           </h1>
 
           {/* Role toggle */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, background: BORDER, marginBottom: 28 }}>
+          <div className="grid-2-sm" style={{ gap: 2, background: BORDER, marginBottom: 28 }}>
             {(['customer', 'craftsman'] as const).map(r => (
               <button
                 key={r}

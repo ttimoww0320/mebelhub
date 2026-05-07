@@ -17,7 +17,7 @@ export default async function HomePage() {
       <PublicNav />
 
       {/* HERO */}
-      <section style={{ display:'grid', gridTemplateColumns:'1.1fr 1fr', gap:40, padding:'60px 40px 40px', alignItems:'center', minHeight:640 }}>
+      <section className="grid-hero px-page" style={{ paddingTop:60, paddingBottom:40 }}>
         <div style={{ display:'flex', flexDirection:'column', gap:28 }}>
           <div style={{ display:'flex', alignItems:'center', gap:10, fontSize:11, color:MUTE, letterSpacing:'0.12em', textTransform:'uppercase' }}>
             <span style={{ color:G, fontSize:8 }}>●</span>
@@ -68,8 +68,8 @@ export default async function HomePage() {
       </div>
 
       {/* HOW IT WORKS */}
-      <section style={{ padding:'100px 40px', borderBottom:`1px solid ${BORDER}` }}>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 2fr', gap:60, marginBottom:60 }}>
+      <section className="px-page py-sect" style={{ borderBottom:`1px solid ${BORDER}` }}>
+        <div className="grid-1-2" style={{ marginBottom:60 }}>
           <div>
             <div style={{ fontFamily:MONO, fontSize:11, color:G, letterSpacing:'0.14em', paddingBottom:14, borderBottom:`1px solid ${G}`, display:'inline-block', marginBottom:20 }}>§ 01 · ПРОЦЕСС</div>
             <h2 style={{ fontFamily:HEAD, fontSize:52, fontWeight:300, letterSpacing:'-0.02em', lineHeight:1, margin:0 }}>
@@ -80,7 +80,7 @@ export default async function HomePage() {
             Три шага от идеи до готовой мебели. Без посредников, без торга вслепую, без риска работы с непроверенным мастером.
           </div>
         </div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:2, background:BORDER }}>
+        <div className="grid-3" style={{ gap:2, background:BORDER }}>
           {[
             { n:'01', t:'Опишите заказ', d:'Укажите размеры, стиль, материал и бюджет. Прикрепите фото для вдохновения. 5 минут — и заявка опубликована.' },
             { n:'02', t:'Получите офферы', d:'Мастера Ташкента увидят ваш заказ и пришлют предложения с ценой, сроком и 3D-эскизом. Обычно — в течение часа.' },
@@ -96,7 +96,7 @@ export default async function HomePage() {
       </section>
 
       {/* LIVE FEED */}
-      <section style={{ padding:'100px 40px', borderBottom:`1px solid ${BORDER}` }}>
+      <section className="px-page py-sect" style={{ borderBottom:`1px solid ${BORDER}` }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'end', marginBottom:48 }}>
           <div>
             <div style={{ fontFamily:MONO, fontSize:11, color:G, letterSpacing:'0.14em', marginBottom:16 }}>§ 02 · ЛЕНТА · LIVE</div>
@@ -108,7 +108,7 @@ export default async function HomePage() {
         </div>
         <div style={{ display:'flex', flexDirection:'column' }}>
           {MH_ORDERS_FEED.map((o, i) => (
-            <div key={o.id} style={{ display:'grid', gridTemplateColumns:'50px 1fr auto auto auto', gap:24, padding:'22px 0', borderBottom:`1px solid ${BORDER}`, borderTop:i===0?`1px solid ${BORDER}`:'none', alignItems:'center' }}>
+            <div key={o.id} className="order-row-5" style={{ padding:'22px 0', borderBottom:`1px solid ${BORDER}`, borderTop:i===0?`1px solid ${BORDER}`:'none' }}>
               <div style={{ fontFamily:MONO, fontSize:11, color:MUTE }}>#{String(i+1).padStart(2,'0')}</div>
               <div style={{ fontSize:17, fontWeight:400 }}>{o.title}</div>
               <div style={{ fontSize:12, color:DIM }}>{o.district}</div>
@@ -120,7 +120,7 @@ export default async function HomePage() {
       </section>
 
       {/* FEATURED WORKS */}
-      <section style={{ padding:'100px 40px', borderBottom:`1px solid ${BORDER}` }}>
+      <section className="px-page py-sect" style={{ borderBottom:`1px solid ${BORDER}` }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'end', marginBottom:48 }}>
           <div>
             <div style={{ fontFamily:MONO, fontSize:11, color:G, letterSpacing:'0.14em', marginBottom:16 }}>§ 03 · РАБОТЫ</div>
@@ -130,7 +130,7 @@ export default async function HomePage() {
           </div>
           <Link href="/works" style={{ fontSize:12, color:DIM, letterSpacing:'0.12em', textTransform:'uppercase', textDecoration:'none' }}>Все работы →</Link>
         </div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:24 }}>
+        <div className="grid-3-gap">
           {MH_WORKS.slice(0,6).map(w => {
             const master = MH_MASTERS.find(m => m.id === w.master)
             return (
@@ -152,7 +152,7 @@ export default async function HomePage() {
       </section>
 
       {/* MASTERS TEASER */}
-      <section style={{ padding:'100px 40px', borderBottom:`1px solid ${BORDER}` }}>
+      <section className="px-page py-sect" style={{ borderBottom:`1px solid ${BORDER}` }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'end', marginBottom:48 }}>
           <div>
             <div style={{ fontFamily:MONO, fontSize:11, color:G, letterSpacing:'0.14em', marginBottom:16 }}>§ 04 · МАСТЕРА</div>
@@ -160,7 +160,7 @@ export default async function HomePage() {
           </div>
           <Link href="/masters" style={{ fontSize:12, color:DIM, letterSpacing:'0.12em', textTransform:'uppercase', textDecoration:'none' }}>Все мастера →</Link>
         </div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:2, background:BORDER }}>
+        <div className="grid-3" style={{ gap:2, background:BORDER }}>
           {MH_MASTERS.slice(0,3).map(m => (
             <Link key={m.id} href={`/craftsman/${m.id}`} style={{ background:BG, padding:32, textDecoration:'none', color:TEXT, display:'flex', flexDirection:'column', gap:18 }}>
               <div style={{ display:'flex', alignItems:'center', gap:14 }}>
@@ -198,7 +198,7 @@ export default async function HomePage() {
       </section>
 
       {/* FOOTER */}
-      <footer style={{ padding:'60px 40px 40px', borderTop:`1px solid ${BORDER}`, background:BG, color:DIM, fontSize:12, display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr 1fr', gap:40 }}>
+      <footer className="grid-footer px-page" style={{ paddingTop:60, paddingBottom:40, borderTop:`1px solid ${BORDER}`, background:BG, color:DIM, fontSize:12 }}>
         <div>
           <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:16 }}>
             <span style={{ color:G, fontSize:14 }}>◆</span>

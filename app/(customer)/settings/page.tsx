@@ -67,14 +67,14 @@ export default function SettingsPage() {
     <div style={{ background: BG, color: TEXT, minHeight: '100vh' }}>
 
       {/* Header */}
-      <div style={{ padding: '40px', borderBottom: `1px solid ${BORDER}` }}>
+      <div className="px-page" style={{ paddingTop: 40, paddingBottom: 40, borderBottom: `1px solid ${BORDER}` }}>
         <div style={{ fontFamily: MONO, fontSize: 11, color: G, letterSpacing: '0.14em', marginBottom: 10 }}>§ НАСТРОЙКИ</div>
         <h1 style={{ fontFamily: HEAD, fontSize: 60, fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>
           Настройки <em style={{ color: G }}>аккаунта</em>
         </h1>
       </div>
 
-      <div style={{ padding: '40px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'start' }}>
+      <div className="grid-2 px-page" style={{ paddingTop: 40, paddingBottom: 40 }}>
 
         {/* Profile form */}
         <div style={{ background: BG2, border: `1px solid ${BORDER}`, padding: 32 }}>

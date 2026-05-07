@@ -40,7 +40,7 @@ export default async function CraftsmanDashboard({
     <div style={{ background: BG, color: TEXT, minHeight: '100vh' }}>
 
       {/* Header */}
-      <div style={{ padding: '40px 40px', borderBottom: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'space-between', alignItems: 'end' }}>
+      <div className="px-page" style={{ paddingTop: 40, paddingBottom: 40, borderBottom: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'space-between', alignItems: 'end', flexWrap: 'wrap', gap: 16 }}>
         <div>
           <div style={{ fontFamily: MONO, fontSize: 11, color: G, letterSpacing: '0.14em', marginBottom: 10 }}>§ ЛЕНТА ЗАКАЗОВ</div>
           <h1 style={{ fontFamily: HEAD, fontSize: 60, fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>
@@ -53,7 +53,7 @@ export default async function CraftsmanDashboard({
       </div>
 
       {/* Stats */}
-      <div style={{ padding: '40px 40px 0', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, background: BORDER }}>
+      <div className="grid-4 px-page" style={{ paddingTop: 40, gap: 2, background: BORDER }}>
         {([
           [String(orders?.length ?? 0),  'открытых',  'заказов сейчас'],
           [String(offersSent ?? 0),       'офферов',   'отправлено всего'],
@@ -70,7 +70,7 @@ export default async function CraftsmanDashboard({
 
       {/* Verification banner */}
       {vs === 'none' && (
-        <div style={{ margin: '32px 40px 0', padding: '20px 24px', border: `1px solid ${G}`, background: 'rgba(228,182,104,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="px-page" style={{ marginTop: 32, padding: '20px 24px', border: `1px solid ${G}`, background: 'rgba(228,182,104,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <div style={{ fontFamily: MONO, fontSize: 10, color: G, letterSpacing: '0.12em', marginBottom: 6 }}>◆ ВЕРИФИКАЦИЯ</div>
             <div style={{ fontSize: 14, color: TEXT }}>Пройдите верификацию — заказчики доверяют проверенным мастерам больше</div>
@@ -81,14 +81,14 @@ export default async function CraftsmanDashboard({
         </div>
       )}
       {vs === 'pending' && (
-        <div style={{ margin: '32px 40px 0', padding: '20px 24px', border: `1px solid rgba(250,204,21,0.4)`, background: 'rgba(250,204,21,0.04)' }}>
+        <div className="px-page" style={{ marginTop: 32, padding: '20px 24px', border: `1px solid rgba(250,204,21,0.4)`, background: 'rgba(250,204,21,0.04)' }}>
           <div style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(250,204,21,0.8)', letterSpacing: '0.12em', marginBottom: 6 }}>◆ ВЕРИФИКАЦИЯ НА ПРОВЕРКЕ</div>
           <div style={{ fontSize: 14, color: DIM }}>Ваш документ на проверке. Мы уведомим вас в Telegram в течение 1–2 дней.</div>
         </div>
       )}
 
       {/* Orders feed */}
-      <div style={{ padding: '40px' }}>
+      <div className="px-page" style={{ paddingTop: 40, paddingBottom: 40 }}>
         <div style={{ fontFamily: MONO, fontSize: 11, color: G, letterSpacing: '0.14em', marginBottom: 24 }}>§ ОТКРЫТЫЕ ЗАКАЗЫ</div>
         <Suspense>
           <Filters />
@@ -103,11 +103,10 @@ export default async function CraftsmanDashboard({
             {orders.map((order, i) => {
               const offersCount = (order.offers as any)?.[0]?.count ?? 0
               return (
-                <Link key={order.id} href={`/orders/${order.id}`} style={{
+                <Link key={order.id} href={`/orders/${order.id}`} className="order-row-d" style={{
                   padding: '28px 0',
                   borderTop: `1px solid ${BORDER}`,
                   ...(i === orders.length - 1 ? { borderBottom: `1px solid ${BORDER}` } : {}),
-                  display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 24, alignItems: 'center',
                   textDecoration: 'none', color: TEXT,
                 }}>
                   <div>
@@ -116,17 +115,17 @@ export default async function CraftsmanDashboard({
                       {order.description?.slice(0, 80)}{order.description?.length > 80 ? '…' : ''}
                     </div>
                   </div>
-                  <div>
+                  <div className="mob-hide">
                     <div style={{ fontSize: 12, color: DIM }}>{order.furniture_type}</div>
                     {order.style && <div style={{ fontSize: 11, color: MUTE, marginTop: 4 }}>{order.style}</div>}
                   </div>
-                  <div>
+                  <div className="mob-hide">
                     <div style={{ fontFamily: HEAD, fontSize: 20, color: G }}>
                       {order.budget_max ? `$${Number(order.budget_max).toLocaleString()}` : '—'}
                     </div>
                     <div style={{ fontSize: 11, color: MUTE, marginTop: 2 }}>бюджет</div>
                   </div>
-                  <div>
+                  <div className="mob-hide">
                     <div style={{ fontSize: 13, color: DIM }}>{offersCount} офферов</div>
                   </div>
                   <div style={{ fontSize: 18, color: DIM }}>→</div>

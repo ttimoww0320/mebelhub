@@ -182,8 +182,8 @@ export default function OrderDetailPage() {
     const statusLabel: Record<string, string> = { open: 'Сбор офферов', in_progress: 'В работе', completed: 'Завершён', cancelled: 'Отменён' }
 
     return (
-      <div style={{ background: BG, color: TEXT, minHeight: 'calc(100vh - 60px)', padding: '40px' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 380px', gap: 40, alignItems: 'start' }}>
+      <div className="px-page" style={{ background: BG, color: TEXT, minHeight: 'calc(100vh - 60px)', paddingTop: 40, paddingBottom: 40 }}>
+        <div className="grid-sidebar" style={{ maxWidth: 1100, margin: '0 auto' }}>
 
           {/* Left: order details */}
           <div>
@@ -203,7 +203,7 @@ export default function OrderDetailPage() {
             {order.images?.length > 0 && (
               <div style={{ marginBottom: 32 }}>
                 <div style={{ fontFamily: MONO, fontSize: 10, color: MUTE, letterSpacing: '0.12em', marginBottom: 12 }}>РЕФЕРЕНСЫ ЗАКАЗЧИКА</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, background: BORDER }}>
+                <div className="grid-3" style={{ gap: 2, background: BORDER }}>
                   {order.images.map((url, i) => {
                     const isImage = /\.(jpe?g|png|gif|webp|avif|svg)(\?|$)/i.test(url)
                     return isImage ? (
@@ -224,7 +224,7 @@ export default function OrderDetailPage() {
               </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, background: BORDER, marginBottom: 32 }}>
+            <div className="grid-2-sm" style={{ gap: 2, background: BORDER, marginBottom: 32 }}>
               {[
                 ['ТИП МЕБЕЛИ', order.furniture_type],
                 ['МАТЕРИАЛ', order.material],
@@ -343,7 +343,7 @@ export default function OrderDetailPage() {
   /* ── END CRAFTSMAN VIEW ─────────────────────────────────────── */
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr 320px', height: 'calc(100vh - 60px)', background: BG, color: TEXT }}>
+    <div className="grid-chat" style={{ background: BG, color: TEXT }}>
 
       {/* Left: offers list */}
       <aside style={{ borderRight: `1px solid ${BORDER}`, overflowY: 'auto' }}>

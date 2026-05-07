@@ -17,7 +17,7 @@ export default async function WorksPage() {
       <PublicNav />
 
       {/* Header */}
-      <div style={{ padding: '60px 40px 40px', borderBottom: `1px solid ${BORDER}` }}>
+      <div className="px-page" style={{ paddingTop: 60, paddingBottom: 40, borderBottom: `1px solid ${BORDER}` }}>
         <div style={{ fontFamily: MONO, fontSize: 11, color: G, letterSpacing: '0.14em', marginBottom: 16 }}>
           § ПОРТФОЛИО · {list.length} РАБОТ
         </div>
@@ -31,7 +31,7 @@ export default async function WorksPage() {
           Мастера ещё не добавили работы. Загляните позже.
         </div>
       ) : (
-        <div style={{ padding: 40, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, background: BORDER }}>
+        <div className="grid-3 px-page" style={{ paddingTop: 40, paddingBottom: 40, gap: 2, background: BORDER }}>
           {list.map(work => {
             const craftsman = work.craftsman as any
             const craftsmanName = craftsman?.company_name || craftsman?.full_name || 'Мастер'

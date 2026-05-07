@@ -30,7 +30,7 @@ export default async function AdminPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {pending.map((craftsman: any) => (
+          {pending.map((craftsman) => (
             <div key={craftsman.id} className="border rounded-xl p-5 bg-white shadow-sm">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>

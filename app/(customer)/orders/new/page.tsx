@@ -104,13 +104,13 @@ export default function NewOrderPage() {
         ))}
       </div>
 
-      <div style={{ padding: '60px 40px 40px', display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 60, alignItems: 'start' }}>
+      <div className="grid-sidebar px-page" style={{ paddingTop: 60, paddingBottom: 40 }}>
         <div>
           {step === 1 && (
             <div>
               <h2 style={{ fontFamily: HEAD, fontSize: 36, fontWeight: 300, margin: '0 0 8px' }}>Что хотите заказать?</h2>
               <p style={{ color: DIM, margin: '0 0 32px', fontSize: 15 }}>Выберите категорию — мы покажем только подходящих мастеров.</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              <div className="grid-3" style={{ gap: 12 }}>
                 {MH_CATEGORIES.map(c => (
                   <button key={c.id} onClick={() => setCat(c.id)} style={{
                     background: cat === c.id ? 'rgba(228,182,104,0.08)' : BG2,
@@ -135,7 +135,7 @@ export default function NewOrderPage() {
               </div>
               <div>
                 <label style={{ fontFamily: MONO, fontSize: 11, color: G, letterSpacing: '0.12em', display: 'block', marginBottom: 10 }}>РАЗМЕРЫ · ММ</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                <div className="grid-3" style={{ gap: 12 }}>
                   {(['w', 'h', 'd'] as const).map((k, ki) => (
                     <div key={k} style={{ position: 'relative' }}>
                       <input value={dims[k]} onChange={e => setDims({ ...dims, [k]: e.target.value })} placeholder="0"

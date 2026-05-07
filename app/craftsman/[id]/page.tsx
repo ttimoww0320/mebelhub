@@ -39,14 +39,14 @@ export default async function CraftsmanPublicPage({ params }: { params: Promise<
       <PublicNav />
 
       {/* Breadcrumb */}
-      <div style={{ padding: '20px 40px', fontFamily: MONO, fontSize: 11, color: MUTE, letterSpacing: '0.1em' }}>
+      <div className="px-page" style={{ paddingTop: 20, paddingBottom: 20, fontFamily: MONO, fontSize: 11, color: MUTE, letterSpacing: '0.1em' }}>
         <Link href="/masters" style={{ color: MUTE, textDecoration: 'none' }}>МАСТЕРА</Link>
         {' / '}
         <span style={{ color: G }}>{displayName.toUpperCase()}</span>
       </div>
 
       {/* Hero */}
-      <div style={{ padding: '40px 40px 60px', borderBottom: `1px solid ${BORDER}`, display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 60, alignItems: 'stretch' }}>
+      <div className="grid-2 px-page" style={{ paddingTop: 40, paddingBottom: 60, borderBottom: `1px solid ${BORDER}`, gap: 60 }}>
         <div style={{ display: 'flex' }}>
           <div style={{ flex: 1, background: accent(master.id), border: `1px solid ${BORDER2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
             <div style={{ fontFamily: HEAD, fontSize: 96, color: G, fontStyle: 'italic', fontWeight: 300 }}>{initials(master.full_name)}</div>
@@ -100,7 +100,7 @@ export default async function CraftsmanPublicPage({ params }: { params: Promise<
       </div>
 
       {/* Portfolio */}
-      <div style={{ padding: '60px 40px 80px' }}>
+      <div className="px-page" style={{ paddingTop: 60, paddingBottom: 80 }}>
         <div style={{ fontFamily: MONO, fontSize: 11, color: G, letterSpacing: '0.14em', marginBottom: 8 }}>§ ПОРТФОЛИО</div>
         <h2 style={{ fontFamily: HEAD, fontSize: 48, fontWeight: 300, letterSpacing: '-0.02em', margin: '0 0 40px' }}>
           Работы <em style={{ color: G }}>мастера</em>
@@ -111,7 +111,7 @@ export default async function CraftsmanPublicPage({ params }: { params: Promise<
             Мастер пока не добавил работы
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, background: BORDER }}>
+          <div className="grid-3" style={{ gap: 2, background: BORDER }}>
             {works.map(work => (
               <div key={work.id} style={{ background: BG, display: 'flex', flexDirection: 'column' }}>
                 {work.image_url && (

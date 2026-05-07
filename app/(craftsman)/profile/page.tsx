@@ -194,7 +194,7 @@ export default function CraftsmanProfilePage() {
     <div style={{ background: BG, color: TEXT, minHeight: '100vh' }}>
 
       {/* Header */}
-      <div style={{ padding: '40px', borderBottom: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'space-between', alignItems: 'end' }}>
+      <div className="px-page" style={{ paddingTop: 40, paddingBottom: 40, borderBottom: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'space-between', alignItems: 'end', flexWrap: 'wrap', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
           <div style={{ width: 80, height: 80, borderRadius: '50%', background: BG2, border: `1px solid ${BORDER2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: HEAD, fontSize: 28, color: G, fontStyle: 'italic' }}>
             {initials}
@@ -219,7 +219,7 @@ export default function CraftsmanProfilePage() {
         </a>
       </div>
 
-      <div style={{ padding: '40px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'start' }}>
+      <div className="grid-2 px-page" style={{ paddingTop: 40, paddingBottom: 40 }}>
 
         {/* Left: Edit form */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
@@ -335,7 +335,7 @@ export default function CraftsmanProfilePage() {
       </div>
 
       {/* Portfolio section */}
-      <div style={{ padding: '0 40px 60px' }}>
+      <div className="px-page" style={{ paddingBottom: 60 }}>
         <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 40 }}>
           <div style={{ fontFamily: MONO, fontSize: 11, color: G, letterSpacing: '0.14em', marginBottom: 32 }}>
             § МОИ РАБОТЫ · {works.length}
@@ -344,7 +344,7 @@ export default function CraftsmanProfilePage() {
           {/* Add work form */}
           <div style={{ background: BG2, border: `1px solid ${BORDER}`, padding: 32, marginBottom: 32 }}>
             <div style={{ fontFamily: MONO, fontSize: 11, color: G, letterSpacing: '0.14em', marginBottom: 24 }}>ДОБАВИТЬ РАБОТУ</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+            <div className="grid-2-sm">
               <div>
                 <label style={{ fontFamily: MONO, fontSize: 10, color: MUTE, letterSpacing: '0.12em', display: 'block', marginBottom: 8 }}>НАЗВАНИЕ *</label>
                 <input value={workTitle} onChange={e => setWorkTitle(e.target.value)} placeholder="Кухонный гарнитур «Минимал»"
@@ -392,7 +392,7 @@ export default function CraftsmanProfilePage() {
               Вы ещё не добавили ни одной работы
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, background: BORDER }}>
+            <div className="grid-3" style={{ gap: 2, background: BORDER }}>
               {works.map(work => (
                 <div key={work.id} style={{ background: BG, padding: 0, position: 'relative' }}>
                   {work.image_url && (

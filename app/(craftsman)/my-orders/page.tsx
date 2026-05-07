@@ -35,7 +35,7 @@ export default async function CraftsmanMyOrdersPage() {
     <div style={{ background: BG, color: TEXT, minHeight: '100vh' }}>
 
       {/* Header */}
-      <div style={{ padding: '40px', borderBottom: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'space-between', alignItems: 'end' }}>
+      <div className="px-page" style={{ paddingTop: 40, paddingBottom: 40, borderBottom: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'space-between', alignItems: 'end', flexWrap: 'wrap', gap: 16 }}>
         <div>
           <div style={{ fontFamily: MONO, fontSize: 11, color: G, letterSpacing: '0.14em', marginBottom: 10 }}>§ МОИ ЗАКАЗЫ</div>
           <h1 style={{ fontFamily: HEAD, fontSize: 60, fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>
@@ -48,7 +48,7 @@ export default async function CraftsmanMyOrdersPage() {
       </div>
 
       {/* Stats */}
-      <div style={{ padding: '40px 40px 0', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, background: BORDER }}>
+      <div className="grid-4 px-page" style={{ paddingTop: 40, gap: 2, background: BORDER }}>
         {([
           [String(accepted.length),  'в работе',   'активных'],
           [String(completed.length), 'завершено',  'заказов'],
@@ -63,7 +63,7 @@ export default async function CraftsmanMyOrdersPage() {
         ))}
       </div>
 
-      <div style={{ padding: '40px' }}>
+      <div className="px-page" style={{ paddingTop: 40, paddingBottom: 40 }}>
         {allOffers.length === 0 ? (
           <div style={{ padding: '80px 0', textAlign: 'center' }}>
             <div style={{ fontFamily: HEAD, fontSize: 36, fontWeight: 300, marginBottom: 16, color: DIM }}>
@@ -109,11 +109,10 @@ function Section({ title, color, offers }: { title: string; color: string; offer
           if (!order) return null
           const statusColor = STATUS_COLOR[order.status] ?? DIM
           return (
-            <Link key={offer.id} href={`/orders/${order.id}`} style={{
+            <Link key={offer.id} href={`/orders/${order.id}`} className="order-row" style={{
               padding: '24px 0',
               borderTop: `1px solid ${BORDER}`,
               ...(i === offers.length - 1 ? { borderBottom: `1px solid ${BORDER}` } : {}),
-              display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 24, alignItems: 'center',
               textDecoration: 'none', color: TEXT,
             }}>
               <div>
@@ -122,12 +121,12 @@ function Section({ title, color, offers }: { title: string; color: string; offer
                   Заказчик: {order.customer?.full_name}
                 </div>
               </div>
-              <div>
+              <div className="mob-hide">
                 <div style={{ fontFamily: MONO, fontSize: 10, color: statusColor, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
                   {STATUS_RU[order.status] ?? order.status}
                 </div>
               </div>
-              <div>
+              <div className="mob-hide">
                 <div style={{ fontFamily: HEAD, fontSize: 20, color: G }}>${Number(offer.price).toLocaleString()}</div>
                 <div style={{ fontSize: 11, color: MUTE, marginTop: 2 }}>{offer.delivery_days} дней</div>
               </div>

@@ -36,7 +36,7 @@ export default async function CustomerOrdersPage() {
 
   return (
     <div style={{ background: BG, color: TEXT, minHeight: '100vh' }}>
-      <div style={{ padding: '40px 40px', borderBottom: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'space-between', alignItems: 'end' }}>
+      <div className="px-page" style={{ paddingTop: 40, paddingBottom: 40, borderBottom: `1px solid ${BORDER}`, display: 'flex', justifyContent: 'space-between', alignItems: 'end', flexWrap: 'wrap', gap: 16 }}>
         <div>
           <div style={{ fontFamily: MONO, fontSize: 11, color: G, letterSpacing: '0.14em', marginBottom: 10 }}>§ ЛИЧНЫЙ КАБИНЕТ</div>
           <h1 style={{ fontFamily: HEAD, fontSize: 60, fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1, margin: 0 }}>
@@ -47,7 +47,7 @@ export default async function CustomerOrdersPage() {
       </div>
 
       {/* Stats row */}
-      <div style={{ padding: '40px 40px 0', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, background: BORDER }}>
+      <div className="grid-4 px-page" style={{ paddingTop: 40, gap: 2, background: BORDER }}>
         {([
           [String(activeCount),      'активных',  'заказов'],
           [String(offersTotal),       'офферов',   'получено'],
@@ -63,7 +63,7 @@ export default async function CustomerOrdersPage() {
       </div>
 
       {/* Orders list */}
-      <div style={{ padding: '40px' }}>
+      <div className="px-page" style={{ paddingTop: 40, paddingBottom: 40 }}>
         <div style={{ fontFamily: MONO, fontSize: 11, color: G, letterSpacing: '0.14em', marginBottom: 20 }}>§ ВАШИ ЗАКАЗЫ</div>
 
         {allOrders.length === 0 ? (
@@ -81,11 +81,10 @@ export default async function CustomerOrdersPage() {
               const masterName = (accepted as any)?.craftsman?.full_name ?? null
 
               return (
-                <Link key={o.id} href={`/orders/${o.id}`} style={{
+                <Link key={o.id} href={`/orders/${o.id}`} className="order-row" style={{
                   padding: '28px 0',
                   borderTop: `1px solid ${BORDER}`,
                   ...(i === allOrders.length - 1 ? { borderBottom: `1px solid ${BORDER}` } : {}),
-                  display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 24, alignItems: 'center',
                   textDecoration: 'none', color: TEXT,
                 }}>
                   <div>
@@ -98,12 +97,12 @@ export default async function CustomerOrdersPage() {
                           : 'Ждём офферов от мастеров'}
                     </div>
                   </div>
-                  <div>
+                  <div className="mob-hide">
                     <div style={{ fontFamily: MONO, fontSize: 10, color: G, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
                       {STATUS_RU[o.status]}
                     </div>
                   </div>
-                  <div style={{ fontFamily: HEAD, fontSize: 22, color: accepted ? G : DIM }}>
+                  <div className="mob-hide" style={{ fontFamily: HEAD, fontSize: 22, color: accepted ? G : DIM }}>
                     {accepted ? `$${(accepted as any).price?.toLocaleString()}` : o.budget_min ? `$${o.budget_min.toLocaleString()}+` : '—'}
                   </div>
                   <div style={{ fontSize: 18, color: DIM }}>→</div>
