@@ -19,8 +19,9 @@ export default function OrderDetailPage() {
   const [order, setOrder]           = useState<Order | null>(null)
   const [offers, setOffers]         = useState<OfferWithCraftsman[]>([])
   const [selectedOffer, setSelected] = useState<OfferWithCraftsman | null>(null)
-  const [messages, setMessages]     = useState<{ from: 'me' | 'other'; text: string; time: string }[]>([])
+  const [messages, setMessages]     = useState<{ id: string; sender_id: string; body: string; created_at: string }[]>([])
   const [input, setInput]           = useState('')
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [loading, setLoading]       = useState(true)
   const [accepting, setAccepting]   = useState(false)
   const [completing, setCompleting] = useState(false)
@@ -52,6 +53,7 @@ export default function OrderDetailPage() {
         uid ? supabase.from('profiles').select('role').eq('id', uid).single() : Promise.resolve({ data: null }),
       ])
 
+      setCurrentUserId(uid)
       setOrder(orderRes.data)
       const offs = (offersRes.data ?? []) as OfferWithCraftsman[]
       setOffers(offs)
@@ -100,10 +102,26 @@ export default function OrderDetailPage() {
     setSubmitting(false)
   }
 
-  const send = () => {
-    if (!input.trim()) return
-    const now = new Date().toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' })
-    setMessages(prev => [...prev, { from: 'me', text: input, time: now }])
+  useEffect(() => {
+    if (!currentUserId) return
+    const supabase = createClient()
+    supabase.from('messages')
+      .select('id, sender_id, body, created_at')
+      .eq('order_id', id)
+      .order('created_at', { ascending: true })
+      .then(({ data }) => setMessages(data || []))
+    const channel = supabase
+      .channel(`chat-${id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `order_id=eq.${id}` },
+        (payload) => setMessages(prev => [...prev, payload.new as any]))
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [id, currentUserId])
+
+  async function send() {
+    if (!input.trim() || !currentUserId) return
+    const supabase = createClient()
+    await supabase.from('messages').insert({ order_id: id, sender_id: currentUserId, body: input.trim() })
     setInput('')
   }
 
@@ -268,11 +286,11 @@ export default function OrderDetailPage() {
                     {messages.length === 0 ? (
                       <div style={{ fontSize: 12, color: MUTE, textAlign: 'center', marginTop: 20 }}>Напишите заказчику — задайте вопросы по проекту</div>
                     ) : (
-                      messages.map((msg, i) => (
-                        <div key={i} style={{ display: 'flex', justifyContent: msg.from === 'me' ? 'flex-end' : 'flex-start' }}>
-                          <div style={{ maxWidth: '80%', background: msg.from === 'me' ? 'rgba(228,182,104,0.08)' : BG2, border: `1px solid ${msg.from === 'me' ? G : BORDER}`, padding: '10px 14px', borderRadius: 2 }}>
-                            <div style={{ fontSize: 13, lineHeight: 1.5 }}>{msg.text}</div>
-                            <div style={{ fontSize: 10, color: MUTE, marginTop: 6, fontFamily: MONO }}>{msg.time}</div>
+                      messages.map((msg) => (
+                        <div key={msg.id} style={{ display: 'flex', justifyContent: msg.sender_id === currentUserId ? 'flex-end' : 'flex-start' }}>
+                          <div style={{ maxWidth: '80%', background: msg.sender_id === currentUserId ? 'rgba(228,182,104,0.08)' : BG2, border: `1px solid ${msg.sender_id === currentUserId ? G : BORDER}`, padding: '10px 14px', borderRadius: 2 }}>
+                            <div style={{ fontSize: 13, lineHeight: 1.5 }}>{msg.body}</div>
+                            <div style={{ fontSize: 10, color: MUTE, marginTop: 6, fontFamily: MONO }}>{new Date(msg.created_at).toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' })}</div>
                           </div>
                         </div>
                       ))
@@ -412,11 +430,11 @@ export default function OrderDetailPage() {
                   {new Date(selectedOffer.created_at).toLocaleString('ru', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
-              {messages.map((msg, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: msg.from === 'me' ? 'flex-end' : 'flex-start' }}>
-                  <div style={{ maxWidth: '66%', background: msg.from === 'me' ? 'rgba(228,182,104,0.08)' : BG2, border: `1px solid ${msg.from === 'me' ? G : BORDER}`, padding: '14px 18px', borderRadius: 2 }}>
-                    <div style={{ fontSize: 14, lineHeight: 1.5 }}>{msg.text}</div>
-                    <div style={{ fontSize: 10, color: MUTE, marginTop: 8, fontFamily: MONO }}>{msg.time}</div>
+              {messages.map((msg) => (
+                <div key={msg.id} style={{ display: 'flex', justifyContent: msg.sender_id === currentUserId ? 'flex-end' : 'flex-start' }}>
+                  <div style={{ maxWidth: '66%', background: msg.sender_id === currentUserId ? 'rgba(228,182,104,0.08)' : BG2, border: `1px solid ${msg.sender_id === currentUserId ? G : BORDER}`, padding: '14px 18px', borderRadius: 2 }}>
+                    <div style={{ fontSize: 14, lineHeight: 1.5 }}>{msg.body}</div>
+                    <div style={{ fontSize: 10, color: MUTE, marginTop: 8, fontFamily: MONO }}>{new Date(msg.created_at).toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' })}</div>
                   </div>
                 </div>
               ))}

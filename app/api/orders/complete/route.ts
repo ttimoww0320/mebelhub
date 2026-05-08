@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendNotification } from '@/lib/notifications'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -12,7 +13,7 @@ export async function POST(req: NextRequest) {
 
   const { data: order } = await admin
     .from('orders')
-    .select('customer_id, status')
+    .select('customer_id, status, title')
     .eq('id', orderId)
     .single()
 
@@ -21,6 +22,22 @@ export async function POST(req: NextRequest) {
   if (order.status === 'completed') return NextResponse.json({ ok: true })
 
   await admin.from('orders').update({ status: 'completed' }).eq('id', orderId)
+
+  const { data: acceptedOffer } = await admin
+    .from('offers')
+    .select('craftsman_id')
+    .eq('order_id', orderId)
+    .eq('status', 'accepted')
+    .single()
+
+  if (acceptedOffer) {
+    await sendNotification({
+      userId: acceptedOffer.craftsman_id,
+      title: 'Заказ завершён!',
+      body: `Заказчик отметил заказ "${order.title}" как выполненный. Спасибо за работу!`,
+      link: `/my-orders`,
+    })
+  }
 
   return NextResponse.json({ ok: true })
 }
