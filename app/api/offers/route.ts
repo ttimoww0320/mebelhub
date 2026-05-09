@@ -39,6 +39,13 @@ export async function POST(req: NextRequest) {
       body: `${craftsman?.full_name} отправил предложение на ваш заказ "${order.title}"`,
       link: `/orders/${order_id}`,
     })
+
+    await sendNotification({
+      userId: user.id,
+      title: 'Оффер отправлен',
+      body: `Вы предложили $${price} на заказ "${order.title}". Ждите ответа заказчика.`,
+      link: `/orders/${order_id}`,
+    })
   }
 
   return NextResponse.json({ offer })
