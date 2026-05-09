@@ -50,15 +50,13 @@ export default function Chat({ orderId, currentUserId }: { orderId: string; curr
     e.preventDefault()
     if (!text.trim()) return
     setLoading(true)
-
-    const supabase = createClient()
-    await supabase.from('messages').insert({
-      order_id: orderId,
-      sender_id: currentUserId,
-      body: text.trim(),
-    })
-
+    const msg = text.trim()
     setText('')
+    await fetch('/api/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId, body: msg }),
+    })
     setLoading(false)
   }
 

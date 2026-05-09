@@ -121,9 +121,13 @@ export default function OrderDetailPage() {
 
   async function send() {
     if (!input.trim() || !currentUserId) return
-    const supabase = createClient()
-    await supabase.from('messages').insert({ order_id: id, sender_id: currentUserId, body: input.trim() })
+    const msg = input.trim()
     setInput('')
+    await fetch('/api/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId: id, body: msg }),
+    })
   }
 
   async function acceptOffer(offerId: string) {
