@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { G, BG, BORDER, TEXT, DIM, BG2 } from '@/lib/tokens'
+import NotificationsBell from '@/components/notifications-bell'
 
 function currentId(pathname: string) {
   if (pathname === '/') return 'home'
@@ -123,6 +124,7 @@ export default function PublicNav() {
               {isCraftsman && navUser.company_name && (
                 <span style={{ fontSize: 12, color: DIM }}>{navUser.company_name}</span>
               )}
+              <NotificationsBell />
               <button onClick={handleSignOut}
                 style={{ fontSize: 13, color: DIM, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>
                 Выйти
@@ -146,6 +148,9 @@ export default function PublicNav() {
             </>
           )}
         </div>
+
+        {/* Mobile bell (only when logged in) */}
+        {navUser && <span className="mob-hamburger"><NotificationsBell /></span>}
 
         {/* Mobile hamburger */}
         <button
