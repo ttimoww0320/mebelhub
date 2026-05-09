@@ -2,16 +2,81 @@ export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
 import HeroAnimation from '@/components/hero-animation'
-import { WorkIllustration } from '@/components/work-illustration'
-import { MH_WORKS, MH_CATEGORIES, MH_MASTERS, MH_ORDERS_FEED } from '@/lib/mock-data'
+import { MH_CATEGORIES } from '@/lib/mock-data'
 import PublicNav from '@/components/public-nav'
 import { createClient } from '@/lib/supabase/server'
 import { G, BG, BG2, BORDER, BORDER2, TEXT, DIM, MUTE, MONO, HEAD } from '@/lib/tokens'
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 2) return 'только что'
+  if (mins < 60) return `${mins} мин назад`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours} ч назад`
+  const days = Math.floor(hours / 24)
+  return `${days} дн назад`
+}
+
+function fmtBudget(min?: number | null, max?: number | null): string {
+  if (!min && !max) return '—'
+  if (min && max) return `$${min.toLocaleString('ru-RU')}–$${max.toLocaleString('ru-RU')}`
+  if (min) return `от $${min.toLocaleString('ru-RU')}`
+  return `до $${max!.toLocaleString('ru-RU')}`
+}
+
+const ACCENT_COLORS = ['#3a2d1f','#2a2e38','#382416','#2e2a22','#3a2e1a','#26261e','#1f2830','#2a1d30']
+function accentForId(id: string): string {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
+  return ACCENT_COLORS[h % ACCENT_COLORS.length]
+}
 
 export default async function HomePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const ctaHref = user ? '/orders/new' : '/register?role=customer'
+
+  const [
+    { data: orders },
+    { data: works },
+    { data: masters },
+    { count: ordersCount },
+    { count: mastersCount },
+    { data: ratingRows },
+  ] = await Promise.all([
+    supabase
+      .from('orders')
+      .select('id, title, furniture_type, budget_min, budget_max, created_at, offers(count)')
+      .eq('status', 'open')
+      .order('created_at', { ascending: false })
+      .limit(5),
+    supabase
+      .from('works')
+      .select('id, title, category, description, price, craftsman_id, image_url, craftsman:profiles!craftsman_id(id, full_name)')
+      .order('created_at', { ascending: false })
+      .limit(6),
+    supabase
+      .from('profiles')
+      .select('id, full_name, bio, rating, reviews_count, verification_status')
+      .eq('role', 'craftsman')
+      .eq('verification_status', 'verified')
+      .order('rating', { ascending: false })
+      .limit(3),
+    supabase.from('orders').select('*', { count: 'exact', head: true }),
+    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'craftsman').eq('verification_status', 'verified'),
+    supabase.from('profiles').select('rating').eq('role', 'craftsman').gt('rating', 0),
+  ])
+
+  const avgRating = ratingRows && ratingRows.length > 0
+    ? (ratingRows.reduce((s: number, p: any) => s + Number(p.rating), 0) / ratingRows.length).toFixed(1)
+    : '—'
+
+  const stats = [
+    [String(ordersCount ?? 0), '+', 'Заказов\nразмещено'],
+    [String(mastersCount ?? 0), '+', 'Мастеров\nв Ташкенте'],
+    [avgRating, '★', 'Средний\nрейтинг'],
+  ]
 
   return (
     <div style={{ background: BG, color: TEXT, minHeight: '100vh' }}>
@@ -43,9 +108,9 @@ export default async function HomePage() {
             </Link>
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:24, marginTop:16 }}>
-            {[['500','+','Заказов\nразмещено'],['120','+','Мастеров\nв Ташкенте'],['4.8','★','Средний\nрейтинг']].map(([n,suf,lbl],i) => (
+            {stats.map(([n, suf, lbl], i) => (
               <div key={i} style={{ display:'flex', alignItems:'center', gap:24 }}>
-                {i>0 && <div style={{ width:1, height:32, background:BORDER }}/>}
+                {i > 0 && <div style={{ width:1, height:32, background:BORDER }}/>}
                 <div>
                   <div style={{ fontFamily:HEAD, fontSize:34, fontWeight:300, letterSpacing:'-0.02em' }}>
                     {n}<span style={{ color:G, fontSize:20, marginLeft:suf==='★'?4:2 }}>{suf}</span>
@@ -109,15 +174,22 @@ export default async function HomePage() {
           </div>
         </div>
         <div style={{ display:'flex', flexDirection:'column' }}>
-          {MH_ORDERS_FEED.map((o, i) => (
-            <div key={o.id} className="order-row-5" style={{ padding:'22px 0', borderBottom:`1px solid ${BORDER}`, borderTop:i===0?`1px solid ${BORDER}`:'none' }}>
-              <div style={{ fontFamily:MONO, fontSize:11, color:MUTE }}>#{String(i+1).padStart(2,'0')}</div>
-              <div style={{ fontSize:17, fontWeight:400 }}>{o.title}</div>
-              <div style={{ fontSize:12, color:DIM }}>{o.district}</div>
-              <div style={{ fontFamily:MONO, fontSize:12, color:G, letterSpacing:'0.04em' }}>{o.budget}</div>
-              <div style={{ fontSize:12, color:MUTE, minWidth:140, textAlign:'right' }}>{o.offers} офферов · {o.time}</div>
+          {!orders?.length ? (
+            <div style={{ padding:'40px 0', textAlign:'center', color:MUTE, fontSize:14 }}>
+              Пока нет открытых заказов. <Link href={ctaHref} style={{ color:G, textDecoration:'none' }}>Разместите первый →</Link>
             </div>
-          ))}
+          ) : orders.map((o, i) => {
+            const offerCount = (o as any).offers?.[0]?.count ?? 0
+            return (
+              <div key={o.id} className="order-row-5" style={{ padding:'22px 0', borderBottom:`1px solid ${BORDER}`, borderTop:i===0?`1px solid ${BORDER}`:'none' }}>
+                <div style={{ fontFamily:MONO, fontSize:11, color:MUTE }}>#{String(i+1).padStart(2,'0')}</div>
+                <div style={{ fontSize:17, fontWeight:400 }}>{o.title}</div>
+                <div style={{ fontSize:12, color:DIM }}>{(o as any).furniture_type ?? '—'}</div>
+                <div style={{ fontFamily:MONO, fontSize:12, color:G, letterSpacing:'0.04em' }}>{fmtBudget((o as any).budget_min, (o as any).budget_max)}</div>
+                <div style={{ fontSize:12, color:MUTE, minWidth:140, textAlign:'right' }}>{offerCount} офферов · {timeAgo(o.created_at)}</div>
+              </div>
+            )
+          })}
         </div>
       </section>
 
@@ -132,25 +204,35 @@ export default async function HomePage() {
           </div>
           <Link href="/works" style={{ fontSize:12, color:DIM, letterSpacing:'0.12em', textTransform:'uppercase', textDecoration:'none' }}>Все работы →</Link>
         </div>
-        <div className="grid-3-gap">
-          {MH_WORKS.slice(0,6).map(w => {
-            const master = MH_MASTERS.find(m => m.id === w.master)
-            return (
-              <Link key={w.id} href={`/craftsman/${w.master}`} style={{ display:'flex', flexDirection:'column', gap:14, textDecoration:'none', color:TEXT }}>
-                <WorkIllustration work={w}/>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'start' }}>
-                  <div>
-                    <div style={{ fontFamily:HEAD, fontSize:22, fontWeight:400, fontStyle:'italic', letterSpacing:'-0.01em' }}>{w.title}</div>
-                    <div style={{ fontSize:12, color:MUTE, marginTop:4 }}>{w.material}</div>
+        {!works?.length ? (
+          <div style={{ padding:'40px 0', textAlign:'center', color:MUTE, fontSize:14 }}>Работы мастеров появятся здесь</div>
+        ) : (
+          <div className="grid-3-gap">
+            {works.map(w => {
+              const craftsman = (w as any).craftsman
+              return (
+                <Link key={w.id} href={`/craftsman/${w.craftsman_id}`} style={{ display:'flex', flexDirection:'column', gap:14, textDecoration:'none', color:TEXT }}>
+                  {w.image_url ? (
+                    <img src={w.image_url} alt={w.title} style={{ width:'100%', aspectRatio:'4/3', objectFit:'cover', display:'block' }} />
+                  ) : (
+                    <div style={{ width:'100%', aspectRatio:'4/3', background:BG2, border:`1px solid ${BORDER}`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                      <span style={{ fontFamily:HEAD, fontSize:32, color:MUTE, fontStyle:'italic' }}>{w.category?.[0] ?? '?'}</span>
+                    </div>
+                  )}
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'start' }}>
+                    <div>
+                      <div style={{ fontFamily:HEAD, fontSize:22, fontWeight:400, fontStyle:'italic', letterSpacing:'-0.01em' }}>{w.title}</div>
+                      <div style={{ fontSize:12, color:MUTE, marginTop:4 }}>{w.category}</div>
+                    </div>
+                    <div style={{ fontSize:11, color:DIM, textAlign:'right', flexShrink:0 }}>
+                      {craftsman?.full_name ?? ''}
+                    </div>
                   </div>
-                  <div style={{ fontSize:11, color:DIM, textAlign:'right' }}>
-                    {master?.shop}<br/><span style={{ color:MUTE }}>{w.year}</span>
-                  </div>
-                </div>
-              </Link>
-            )
-          })}
-        </div>
+                </Link>
+              )
+            })}
+          </div>
+        )}
       </section>
 
       {/* MASTERS TEASER */}
@@ -162,27 +244,40 @@ export default async function HomePage() {
           </div>
           <Link href="/masters" style={{ fontSize:12, color:DIM, letterSpacing:'0.12em', textTransform:'uppercase', textDecoration:'none' }}>Все мастера →</Link>
         </div>
-        <div className="grid-3" style={{ gap:2, background:BORDER }}>
-          {MH_MASTERS.slice(0,3).map(m => (
-            <Link key={m.id} href={`/craftsman/${m.id}`} style={{ background:BG, padding:32, textDecoration:'none', color:TEXT, display:'flex', flexDirection:'column', gap:18 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-                <div style={{ width:48, height:48, borderRadius:'50%', background:m.accent, border:`1px solid ${BORDER2}`, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:HEAD, fontSize:18, color:G, fontStyle:'italic' }}>
-                  {m.name.split(' ').map(w => w[0]).join('')}
-                </div>
-                <div>
-                  <div style={{ fontSize:15, fontWeight:500 }}>{m.name}</div>
-                  <div style={{ fontSize:11, color:MUTE, letterSpacing:'0.08em', textTransform:'uppercase', marginTop:2 }}>{m.shop}</div>
-                </div>
-              </div>
-              <div style={{ fontSize:13, color:DIM, lineHeight:1.5 }}>{m.bio.slice(0,110)}…</div>
-              <div style={{ display:'flex', gap:16, marginTop:'auto', paddingTop:18, borderTop:`1px dashed ${BORDER}`, fontSize:11, color:MUTE, letterSpacing:'0.06em', textTransform:'uppercase' }}>
-                <span><span style={{ color:G }}>★ {m.rating}</span> · {m.reviews} отзывов</span>
-                <span>·</span>
-                <span>С {m.since}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        {!masters?.length ? (
+          <div style={{ padding:'40px 0', textAlign:'center', color:MUTE, fontSize:14 }}>Верифицированные мастера появятся здесь</div>
+        ) : (
+          <div className="grid-3" style={{ gap:2, background:BORDER }}>
+            {masters.map(m => {
+              const initials = (m.full_name ?? '?').split(' ').map((w: string) => w[0]).join('').slice(0, 2)
+              const accent = accentForId(m.id)
+              const bio = m.bio ?? ''
+              return (
+                <Link key={m.id} href={`/craftsman/${m.id}`} style={{ background:BG, padding:32, textDecoration:'none', color:TEXT, display:'flex', flexDirection:'column', gap:18 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+                    <div style={{ width:48, height:48, borderRadius:'50%', background:accent, border:`1px solid ${BORDER2}`, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:HEAD, fontSize:18, color:G, fontStyle:'italic', flexShrink:0 }}>
+                      {initials}
+                    </div>
+                    <div>
+                      <div style={{ fontSize:15, fontWeight:500 }}>{m.full_name}</div>
+                      <div style={{ fontSize:11, color:MUTE, letterSpacing:'0.08em', textTransform:'uppercase', marginTop:2 }}>Верифицирован ✓</div>
+                    </div>
+                  </div>
+                  {bio && (
+                    <div style={{ fontSize:13, color:DIM, lineHeight:1.5 }}>{bio.slice(0, 110)}{bio.length > 110 ? '…' : ''}</div>
+                  )}
+                  <div style={{ display:'flex', gap:16, marginTop:'auto', paddingTop:18, borderTop:`1px dashed ${BORDER}`, fontSize:11, color:MUTE, letterSpacing:'0.06em', textTransform:'uppercase' }}>
+                    {(m.rating ?? 0) > 0 ? (
+                      <span><span style={{ color:G }}>★ {Number(m.rating).toFixed(1)}</span> · {m.reviews_count ?? 0} отзывов</span>
+                    ) : (
+                      <span style={{ color:MUTE }}>Новый мастер</span>
+                    )}
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        )}
       </section>
 
       {/* FINAL CTA */}
