@@ -22,6 +22,13 @@ export async function POST(req: NextRequest) {
   if (order.customer_id !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   if (order.status !== 'open') return NextResponse.json({ error: 'Order is not open' }, { status: 400 })
 
+  // Get rejected offers before updating (to notify their craftsmen)
+  const { data: rejectedOffers } = await admin
+    .from('offers')
+    .select('craftsman_id')
+    .eq('order_id', orderId)
+    .neq('id', offerId)
+
   // Accept this offer, reject all others
   await admin.from('offers').update({ status: 'rejected' })
     .eq('order_id', orderId)
@@ -52,6 +59,18 @@ export async function POST(req: NextRequest) {
       body: `${craftsmanName} приступает к выполнению заказа "${order.title ?? ''}".`,
       link: `/orders/${orderId}`,
     })
+  }
+
+  // Notify rejected craftsmen
+  if (rejectedOffers?.length) {
+    await Promise.all(rejectedOffers.map(o =>
+      sendNotification({
+        userId: o.craftsman_id,
+        title: 'Оффер отклонён',
+        body: `Заказчик выбрал другого мастера для заказа "${order.title ?? ''}".`,
+        link: '/dashboard',
+      })
+    ))
   }
 
   return NextResponse.json({ ok: true })
