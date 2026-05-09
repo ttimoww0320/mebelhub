@@ -30,12 +30,26 @@ export async function POST(req: NextRequest) {
   await admin.from('offers').update({ status: 'accepted' }).eq('id', offerId)
   await admin.from('orders').update({ status: 'in_progress' }).eq('id', orderId)
 
-  const { data: offer } = await admin.from('offers').select('craftsman_id, price').eq('id', offerId).single()
+  const { data: offer } = await admin
+    .from('offers')
+    .select('craftsman_id, price, profiles(full_name)')
+    .eq('id', offerId)
+    .single()
+
   if (offer) {
+    const craftsmanName = (offer.profiles as any)?.full_name ?? 'Мастер'
+
     await sendNotification({
       userId: offer.craftsman_id,
       title: 'Ваш оффер принят!',
       body: `Заказчик принял ваше предложение по заказу "${order.title ?? ''}". Свяжитесь для начала работы.`,
+      link: `/orders/${orderId}`,
+    })
+
+    await sendNotification({
+      userId: order.customer_id,
+      title: 'Мастер принял заказ в работу',
+      body: `${craftsmanName} приступает к выполнению заказа "${order.title ?? ''}".`,
       link: `/orders/${orderId}`,
     })
   }
