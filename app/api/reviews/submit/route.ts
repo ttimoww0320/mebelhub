@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendNotification } from '@/lib/notifications'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -37,6 +38,15 @@ export async function POST(req: NextRequest) {
   })
 
   if (insertError) return NextResponse.json({ error: insertError.message }, { status: 400 })
+
+  // Notify craftsman about new review
+  const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating)
+  await sendNotification({
+    userId: craftsmanId,
+    title: 'Новый отзыв о вашей работе',
+    body: `${stars}${comment ? ' — ' + comment : ''}`,
+    link: '/profile',
+  })
 
   // Recalculate craftsman rating
   const { data: reviews } = await admin
