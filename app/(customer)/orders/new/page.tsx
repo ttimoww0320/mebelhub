@@ -56,23 +56,26 @@ export default function NewOrderPage() {
     }
 
     const desc_full = [desc, district ? `Район доставки: ${district}` : ''].filter(Boolean).join('\n\n')
-    const { error: err } = await supabase.from('orders').insert({
-      customer_id: user.id,
-      title: title || MH_CATEGORIES.find(c => c.id === cat)?.name || 'Мой заказ',
-      description: desc_full,
-      furniture_type: cat,
-      style: style,
-      width_cm: dims.w ? Math.round(Number(dims.w) / 10) : null,
-      height_cm: dims.h ? Math.round(Number(dims.h) / 10) : null,
-      depth_cm: dims.d ? Math.round(Number(dims.d) / 10) : null,
-      budget_min: budget,
-      budget_max: Math.floor(budget * 1.4),
-      material: material,
-      deadline: deadlineDate.toISOString().split('T')[0],
-      images: imageUrls,
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: title || MH_CATEGORIES.find(c => c.id === cat)?.name || 'Мой заказ',
+        description: desc_full,
+        furniture_type: cat,
+        style: style,
+        width_cm: dims.w ? Math.round(Number(dims.w) / 10) : null,
+        height_cm: dims.h ? Math.round(Number(dims.h) / 10) : null,
+        depth_cm: dims.d ? Math.round(Number(dims.d) / 10) : null,
+        budget_min: budget,
+        budget_max: Math.floor(budget * 1.4),
+        material: material,
+        deadline: deadlineDate.toISOString().split('T')[0],
+        images: imageUrls,
+      }),
     })
 
-    if (err) { setError('Ошибка при создании заказа. Попробуйте снова.'); setLoading(false); return }
+    if (!res.ok) { setError('Ошибка при создании заказа. Попробуйте снова.'); setLoading(false); return }
     setStep(5)
     setLoading(false)
   }
