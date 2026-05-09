@@ -25,6 +25,7 @@ export default function OrderDetailPage() {
   const [loading, setLoading]       = useState(true)
   const [accepting, setAccepting]   = useState(false)
   const [completing, setCompleting] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
   const [reviewRating, setReviewRating] = useState(0)
   const [reviewHover, setReviewHover]   = useState(0)
   const [reviewComment, setReviewComment] = useState('')
@@ -144,6 +145,18 @@ export default function OrderDetailPage() {
       if (accepted) setSelected(accepted)
     }
     setAccepting(false)
+  }
+
+  async function cancelOrder() {
+    if (!confirm('Отменить заказ? Это действие нельзя отменить.')) return
+    setCancelling(true)
+    const res = await fetch('/api/orders/cancel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId: id }),
+    })
+    if (res.ok) setOrder(prev => prev ? { ...prev, status: 'cancelled' } : prev)
+    setCancelling(false)
   }
 
   async function completeOrder() {
@@ -487,6 +500,17 @@ export default function OrderDetailPage() {
             <span>{new Date(order.deadline).toLocaleDateString('ru', { day: 'numeric', month: 'short' })}</span>
           </>}
         </div>
+
+        {['open', 'in_progress'].includes(order.status) && (
+          <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 16, marginTop: 4 }}>
+            <button
+              onClick={cancelOrder}
+              disabled={cancelling}
+              style={{ width: '100%', background: 'transparent', color: cancelling ? MUTE : '#f87171', border: '1px solid rgba(248,113,113,0.3)', padding: '11px', fontSize: 12, fontWeight: 500, cursor: cancelling ? 'default' : 'pointer', borderRadius: 2, fontFamily: 'inherit', letterSpacing: '0.04em' }}>
+              {cancelling ? 'Отмена…' : 'Отменить заказ'}
+            </button>
+          </div>
+        )}
 
         {selectedOffer && order.status === 'open' && selectedOffer.status === 'pending' && (
           <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 20 }}>
