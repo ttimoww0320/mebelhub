@@ -39,31 +39,36 @@ export async function POST(req: NextRequest) {
   const senderName = sender?.full_name ?? 'Собеседник'
   const preview = body.trim().length > 60 ? body.trim().slice(0, 60) + '…' : body.trim()
 
+  const COOLDOWN_MS = 5 * 60 * 1000
+  const since = new Date(Date.now() - COOLDOWN_MS).toISOString()
+
+  async function notifyIfCooldown(recipientId: string) {
+    const { count } = await admin
+      .from('notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', recipientId)
+      .eq('link', `/orders/${orderId}`)
+      .gte('created_at', since)
+    if (!count) {
+      await sendNotification({
+        userId: recipientId,
+        title: `${senderName} написал в чате`,
+        body: preview,
+        link: `/orders/${orderId}`,
+      })
+    }
+  }
+
   if (user.id === order.customer_id) {
-    // Customer wrote → notify craftsman
     const { data: offer } = await admin
       .from('offers')
       .select('craftsman_id')
       .eq('order_id', orderId)
       .eq('status', 'accepted')
       .maybeSingle()
-
-    if (offer) {
-      await sendNotification({
-        userId: offer.craftsman_id,
-        title: `${senderName} написал в чате`,
-        body: preview,
-        link: `/orders/${orderId}`,
-      })
-    }
+    if (offer) await notifyIfCooldown(offer.craftsman_id)
   } else {
-    // Craftsman wrote → notify customer
-    await sendNotification({
-      userId: order.customer_id,
-      title: `${senderName} написал в чате`,
-      body: preview,
-      link: `/orders/${orderId}`,
-    })
+    await notifyIfCooldown(order.customer_id)
   }
 
   return NextResponse.json({ message })
