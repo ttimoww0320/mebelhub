@@ -16,6 +16,7 @@ function RegisterForm() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -24,6 +25,12 @@ function RegisterForm() {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    if (password !== confirmPassword) {
+      setError('Пароли не совпадают')
+      setLoading(false)
+      return
+    }
 
     const res = await fetch('/api/auth/register', {
       method: 'POST',
@@ -162,6 +169,21 @@ function RegisterForm() {
                   {showPassword ? 'СКРЫТЬ' : 'ПОКАЗАТЬ'}
                 </button>
               </div>
+            </div>
+
+            <div>
+              <label style={{ fontFamily: MONO, fontSize: 10, color: MUTE, letterSpacing: '0.12em', display: 'block', marginBottom: 8 }}>ПОДТВЕРДИТЕ ПАРОЛЬ</label>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                placeholder="Повторите пароль"
+                required
+                style={{ ...inputStyle, borderColor: confirmPassword && confirmPassword !== password ? 'rgba(248,113,113,0.6)' : undefined }}
+              />
+              {confirmPassword && confirmPassword !== password && (
+                <div style={{ fontSize: 11, color: 'rgba(248,113,113,0.8)', marginTop: 6 }}>Пароли не совпадают</div>
+              )}
             </div>
 
             {error && (

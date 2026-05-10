@@ -313,7 +313,10 @@ export default async function HomePage() {
         <div>
           <div style={{ fontSize:10, color:G, letterSpacing:'0.14em', textTransform:'uppercase', marginBottom:14 }}>Ресурсы</div>
           <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-            {['Журнал','Работы','Справочник материалов','Частые вопросы'].map(l => <span key={l}>{l}</span>)}
+            <Link href="/faq" style={{ color:DIM, textDecoration:'none' }}>Частые вопросы</Link>
+            <Link href="/works" style={{ color:DIM, textDecoration:'none' }}>Работы мастеров</Link>
+            <Link href="/terms" style={{ color:DIM, textDecoration:'none' }}>Условия использования</Link>
+            <Link href="/privacy" style={{ color:DIM, textDecoration:'none' }}>Конфиденциальность</Link>
           </div>
         </div>
         <div>

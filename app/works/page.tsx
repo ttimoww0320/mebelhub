@@ -1,5 +1,11 @@
 export const dynamic = 'force-dynamic'
 
+import type { Metadata } from 'next'
+export const metadata: Metadata = {
+  title: 'Работы мастеров — MebelHub',
+  description: 'Портфолио мастеров мебели Ташкента. Кухни, шкафы, диваны, кровати на заказ.',
+}
+
 import Link from 'next/link'
 import PublicNav from '@/components/public-nav'
 import { createAdminClient } from '@/lib/supabase/admin'

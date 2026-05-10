@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PublicNav from '@/components/public-nav'
+import TelegramBanner from '@/components/telegram-banner'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,6 +17,7 @@ export default async function CustomerLayout({ children }: { children: React.Rea
   return (
     <div>
       <PublicNav />
+      <TelegramBanner />
       <main>{children}</main>
     </div>
   )

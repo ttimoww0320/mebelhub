@@ -432,11 +432,13 @@ export default function OrderDetailPage() {
                     <span style={{ fontSize: 11, color: G, fontFamily: MONO, letterSpacing: '0.08em' }}>✓ ПРОВЕРЕН</span>
                   )}
                 </div>
-                <div style={{ fontSize: 11, color: SUCCESS, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: SUCCESS, display: 'inline-block' }} />
-                  Онлайн
+                <div style={{ fontSize: 11, color: DIM }}>
+                  {selectedOffer.craftsman.rating ? `★ ${Number(selectedOffer.craftsman.rating).toFixed(1)} · ${selectedOffer.craftsman.reviews_count} отзывов` : 'Новый мастер'}
                 </div>
               </div>
+              <Link href={`/craftsman/${selectedOffer.craftsman_id}`} style={{ fontSize: 11, color: G, border: `1px solid ${G}`, padding: '6px 12px', textDecoration: 'none', fontFamily: MONO, letterSpacing: '0.08em', borderRadius: 2 }}>
+                ПРОФИЛЬ →
+              </Link>
             </div>
 
             <div style={{ flex: 1, padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
@@ -504,6 +506,27 @@ export default function OrderDetailPage() {
             <span>{new Date(order.deadline).toLocaleDateString('ru', { day: 'numeric', month: 'short' })}</span>
           </>}
         </div>
+
+        {(order as any).images?.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontFamily: MONO, fontSize: 10, color: MUTE, letterSpacing: '0.1em', marginBottom: 10 }}>РЕФЕРЕНСЫ</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+              {(order as any).images.map((url: string, i: number) => {
+                const isImage = /\.(jpe?g|png|gif|webp|avif|svg)(\?|$)/i.test(url)
+                return isImage ? (
+                  <a key={i} href={url} target="_blank" rel="noreferrer">
+                    <img src={url} alt={`Референс ${i + 1}`} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block' }} />
+                  </a>
+                ) : (
+                  <a key={i} href={url} target="_blank" rel="noreferrer"
+                    style={{ background: BG2, border: `1px solid ${BORDER}`, aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', color: G, fontSize: 20 }}>
+                    📎
+                  </a>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {['open', 'in_progress'].includes(order.status) && (
           <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 16, marginTop: 4 }}>

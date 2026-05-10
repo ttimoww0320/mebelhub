@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { G, BG, BG2, BORDER, TEXT, DIM, MUTE, MONO, HEAD, SUCCESS } from '@/lib/tokens'
+import CancelOfferButton from './cancel-offer-button'
 
 const STATUS_COLOR: Record<string, string> = {
   in_progress: G,
@@ -132,6 +133,9 @@ function Section({ title, color, offers }: { title: string; color: string; offer
                 <div style={{ fontFamily: HEAD, fontSize: 20, color: G }}>${Number(offer.price).toLocaleString()}</div>
                 <div style={{ fontSize: 11, color: MUTE, marginTop: 2 }}>{offer.delivery_days} дней</div>
               </div>
+              {offer.status === 'pending' && (
+                <CancelOfferButton offerId={offer.id} />
+              )}
               <div style={{ fontSize: 18, color: DIM }}>→</div>
             </Link>
           )

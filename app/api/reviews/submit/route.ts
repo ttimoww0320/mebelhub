@@ -29,6 +29,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Order not completed' }, { status: 400 })
   }
 
+  // Prevent duplicate reviews for the same order
+  const { data: existingReview } = await admin
+    .from('reviews')
+    .select('id')
+    .eq('order_id', orderId)
+    .eq('customer_id', user.id)
+    .maybeSingle()
+  if (existingReview) return NextResponse.json({ error: 'Вы уже оставили отзыв по этому заказу' }, { status: 400 })
+
   const { error: insertError } = await admin.from('reviews').insert({
     order_id: orderId,
     customer_id: user.id,

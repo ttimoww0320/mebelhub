@@ -8,14 +8,13 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [sentMethod, setSentMethod] = useState<'telegram' | 'email'>('email')
   const [error, setError] = useState('')
-  const [noTelegram, setNoTelegram] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
-    setNoTelegram(false)
 
     const res = await fetch('/api/auth/forgot-password', {
       method: 'POST',
@@ -27,14 +26,11 @@ export default function ForgotPasswordPage() {
     setLoading(false)
 
     if (!res.ok) {
-      if (data.error === 'telegram_not_connected') {
-        setNoTelegram(true)
-      } else {
-        setError(data.error || 'Ошибка')
-      }
+      setError(data.error || 'Ошибка')
       return
     }
 
+    setSentMethod(data.method ?? 'email')
     setSent(true)
   }
 
@@ -54,25 +50,23 @@ export default function ForgotPasswordPage() {
           </h1>
 
           {sent ? (
-            <div style={{ padding: '16px 18px', border: `1px solid rgba(74,222,128,0.3)`, background: 'rgba(74,222,128,0.06)', fontSize: 14, color: SUCCESS, lineHeight: 1.6 }}>
-              ✓ Ссылка для сброса пароля отправлена в ваш Telegram!
-            </div>
-          ) : noTelegram ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ padding: '16px 18px', border: `1px solid rgba(250,204,21,0.3)`, background: 'rgba(250,204,21,0.05)', fontSize: 13, color: 'rgba(250,204,21,0.85)', lineHeight: 1.6 }}>
-                Ваш аккаунт не подключён к Telegram. Для сброса пароля сначала подключите Telegram в настройках профиля.
+              <div style={{ padding: '16px 18px', border: `1px solid rgba(74,222,128,0.3)`, background: 'rgba(74,222,128,0.06)', fontSize: 14, color: SUCCESS, lineHeight: 1.6 }}>
+                {sentMethod === 'telegram'
+                  ? '✓ Ссылка для сброса пароля отправлена в ваш Telegram!'
+                  : '✓ Ссылка для сброса пароля отправлена на ваш email!'}
               </div>
               <p style={{ fontSize: 13, color: MUTE, lineHeight: 1.6, margin: 0 }}>
-                Войдите в аккаунт, перейдите в <span style={{ color: G }}>Настройки</span> и нажмите «Подключить Telegram».
+                {sentMethod === 'telegram'
+                  ? 'Откройте Telegram и перейдите по ссылке. Ссылка действует 1 час.'
+                  : 'Проверьте почту (и папку «Спам»). Ссылка действует 1 час.'}
               </p>
-              <Link href="/login" style={{ background: G, color: BG, padding: '14px', fontSize: 13, fontWeight: 600, letterSpacing: '0.06em', textDecoration: 'none', borderRadius: 2, textAlign: 'center' }}>
-                Вернуться ко входу
-              </Link>
+              <Link href="/login" style={{ fontSize: 13, color: G, textDecoration: 'none' }}>← Вернуться ко входу</Link>
             </div>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <p style={{ fontSize: 13, color: DIM, lineHeight: 1.6, margin: 0 }}>
-                Введите ваш email — отправим ссылку для сброса пароля в Telegram.
+                Введите ваш email — отправим ссылку для сброса пароля в Telegram или на почту.
               </p>
               <div>
                 <label style={{ fontFamily: MONO, fontSize: 10, color: MUTE, letterSpacing: '0.12em', display: 'block', marginBottom: 8 }}>EMAIL</label>
@@ -95,7 +89,7 @@ export default function ForgotPasswordPage() {
                 disabled={loading}
                 style={{ background: loading ? BG : G, color: loading ? MUTE : BG, border: 'none', padding: '16px', fontSize: 13, fontWeight: 600, letterSpacing: '0.06em', cursor: loading ? 'default' : 'pointer', borderRadius: 2, fontFamily: 'inherit' }}
               >
-                {loading ? 'Отправляем…' : 'Отправить ссылку в Telegram →'}
+                {loading ? 'Отправляем…' : 'Отправить ссылку →'}
               </button>
             </form>
           )}

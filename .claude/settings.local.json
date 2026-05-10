@@ -25,7 +25,25 @@
       "PowerShell(Invoke-RestMethod -Uri \"https://api.telegram.org/bot8028355011:AAGgyLL2kfAYIY98O6tPQtg_4aSoyASKzwo/setWebhook?url=https://preorbital-unsulphonated-tilda.ngrok-free.dev/api/telegram/webhook\" | ConvertTo-Json)",
       "PowerShell(Invoke-RestMethod \"http://localhost:4040/api/tunnels\" | ConvertTo-Json -Depth 3)",
       "WebFetch(domain:api.telegram.org)",
-      "Bash(ngrok version *)"
+      "Bash(ngrok version *)",
+      "Bash(npx eslint *)",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\user\\\\VS CODE\\\\mebelhub\" -Recurse -File -Name)",
+      "Bash(Find \"C:\\\\Users\\\\user\\\\VS CODE\\\\mebelhub\" -type f -name \"*.tsx\" -o -name \"*.ts\")",
+      "Bash(Select-Object -First 30)",
+      "Bash(Find C:\\\\Users\\\\user\\\\VS CODE\\\\mebelhub\\\\app *)",
+      "Bash(gh run *)",
+      "PowerShell(npx vercel ls 2>&1 | Select-Object -First 20)",
+      "WebFetch(domain:mebelhub.vercel.app)",
+      "Bash(xargs ls -t)",
+      "Bash(xargs '-I{}' sh -c 'python3 -c \" *)",
+      "Bash(python3 *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\user\\\\VS CODE\\\\mebelhub\" -Exclude node_modules -Directory)",
+      "Bash(Select-Object -ExpandProperty Name)",
+      "Bash(vercel *)"
     ]
   }
 }

@@ -7,12 +7,15 @@ import { createClient } from '@/lib/supabase/server'
 import { G, BG, BG2, BORDER, TEXT, DIM, MUTE, MONO, HEAD } from '@/lib/tokens'
 import Filters from './filters'
 
+const PAGE_SIZE = 20
+
 export default async function CraftsmanDashboard({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string; budget?: string }>
+  searchParams: Promise<{ type?: string; budget?: string; page?: string }>
 }) {
-  const { type, budget } = await searchParams
+  const { type, budget, page: pageParam } = await searchParams
+  const page = Math.max(1, parseInt(pageParam ?? '1') || 1)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -25,15 +28,16 @@ export default async function CraftsmanDashboard({
 
   let query = supabase
     .from('orders')
-    .select('*, customer:profiles!customer_id(full_name), offers(count)')
+    .select('*, customer:profiles!customer_id(full_name), offers(count)', { count: 'exact' })
     .eq('status', 'open')
     .order('created_at', { ascending: false })
-    .limit(20)
+    .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
 
   if (type) query = query.eq('furniture_type', type)
   if (budget) query = query.lte('budget_max', Number(budget))
 
-  const { data: orders } = await query
+  const { data: orders, count: totalOrders } = await query
+  const totalPages = Math.ceil((totalOrders ?? 0) / PAGE_SIZE)
 
   const firstName = (profile as any)?.company_name || profile?.full_name?.split(' ')[0] || 'Мастер'
   const vs = (profile as any)?.verification_status || 'none'
@@ -101,40 +105,62 @@ export default async function CraftsmanDashboard({
             <div style={{ fontFamily: HEAD, fontSize: 32, fontWeight: 300 }}>Заказов по фильтру нет</div>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {orders.map((order, i) => {
-              const offersCount = (order.offers as any)?.[0]?.count ?? 0
-              return (
-                <Link key={order.id} href={`/orders/${order.id}`} className="order-row-d" style={{
-                  padding: '28px 0',
-                  borderTop: `1px solid ${BORDER}`,
-                  ...(i === orders.length - 1 ? { borderBottom: `1px solid ${BORDER}` } : {}),
-                  textDecoration: 'none', color: TEXT,
-                }}>
-                  <div>
-                    <div style={{ fontFamily: HEAD, fontSize: 22, marginBottom: 6 }}>{order.title}</div>
-                    <div style={{ fontSize: 12, color: MUTE, lineHeight: 1.5 }}>
-                      {order.description?.slice(0, 80)}{order.description?.length > 80 ? '…' : ''}
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {orders.map((order, i) => {
+                const offersCount = (order.offers as any)?.[0]?.count ?? 0
+                return (
+                  <Link key={order.id} href={`/orders/${order.id}`} className="order-row-d" style={{
+                    padding: '28px 0',
+                    borderTop: `1px solid ${BORDER}`,
+                    ...(i === orders.length - 1 ? { borderBottom: `1px solid ${BORDER}` } : {}),
+                    textDecoration: 'none', color: TEXT,
+                  }}>
+                    <div>
+                      <div style={{ fontFamily: HEAD, fontSize: 22, marginBottom: 6 }}>{order.title}</div>
+                      <div style={{ fontSize: 12, color: MUTE, lineHeight: 1.5 }}>
+                        {order.description?.slice(0, 80)}{order.description?.length > 80 ? '…' : ''}
+                      </div>
                     </div>
-                  </div>
-                  <div className="mob-hide">
-                    <div style={{ fontSize: 12, color: DIM }}>{order.furniture_type}</div>
-                    {order.style && <div style={{ fontSize: 11, color: MUTE, marginTop: 4 }}>{order.style}</div>}
-                  </div>
-                  <div className="mob-hide">
-                    <div style={{ fontFamily: HEAD, fontSize: 20, color: G }}>
-                      {order.budget_max ? `$${Number(order.budget_max).toLocaleString()}` : '—'}
+                    <div className="mob-hide">
+                      <div style={{ fontSize: 12, color: DIM }}>{order.furniture_type}</div>
+                      {order.style && <div style={{ fontSize: 11, color: MUTE, marginTop: 4 }}>{order.style}</div>}
                     </div>
-                    <div style={{ fontSize: 11, color: MUTE, marginTop: 2 }}>бюджет</div>
-                  </div>
-                  <div className="mob-hide">
-                    <div style={{ fontSize: 13, color: DIM }}>{offersCount} офферов</div>
-                  </div>
-                  <div style={{ fontSize: 18, color: DIM }}>→</div>
-                </Link>
-              )
-            })}
-          </div>
+                    <div className="mob-hide">
+                      <div style={{ fontFamily: HEAD, fontSize: 20, color: G }}>
+                        {order.budget_max ? `$${Number(order.budget_max).toLocaleString()}` : '—'}
+                      </div>
+                      <div style={{ fontSize: 11, color: MUTE, marginTop: 2 }}>бюджет</div>
+                    </div>
+                    <div className="mob-hide">
+                      <div style={{ fontSize: 13, color: DIM }}>{offersCount} офферов</div>
+                    </div>
+                    <div style={{ fontSize: 18, color: DIM }}>→</div>
+                  </Link>
+                )
+              })}
+            </div>
+
+            {totalPages > 1 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, paddingTop: 32 }}>
+                {page > 1 && (
+                  <Link href={`?${new URLSearchParams({ ...(type ? { type } : {}), ...(budget ? { budget } : {}), page: String(page - 1) })}`}
+                    style={{ border: `1px solid ${BORDER}`, padding: '10px 18px', fontSize: 13, color: DIM, textDecoration: 'none', borderRadius: 2 }}>
+                    ← Назад
+                  </Link>
+                )}
+                <span style={{ fontFamily: MONO, fontSize: 11, color: MUTE, letterSpacing: '0.1em' }}>
+                  {page} / {totalPages}
+                </span>
+                {page < totalPages && (
+                  <Link href={`?${new URLSearchParams({ ...(type ? { type } : {}), ...(budget ? { budget } : {}), page: String(page + 1) })}`}
+                    style={{ border: `1px solid ${BORDER}`, padding: '10px 18px', fontSize: 13, color: DIM, textDecoration: 'none', borderRadius: 2 }}>
+                    Вперёд →
+                  </Link>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

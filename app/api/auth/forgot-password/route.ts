@@ -4,11 +4,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!
 const API = `https://api.telegram.org/bot${BOT_TOKEN}`
 
-async function sendMessage(chatId: number, text: string, disablePreview = false) {
+async function sendTg(chatId: number, text: string) {
   await fetch(`${API}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: disablePreview }),
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: true }),
   })
 }
 
@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
   if (!email) return NextResponse.json({ error: 'Введите email' }, { status: 400 })
 
   const admin = createAdminClient()
+  const origin = req.headers.get('origin') || 'https://mebelhub.vercel.app'
 
   const { data: profile } = await admin
     .from('profiles')
@@ -25,14 +26,9 @@ export async function POST(req: NextRequest) {
     .maybeSingle()
 
   if (!profile) {
-    return NextResponse.json({ error: 'Пользователь с таким email не найден' }, { status: 404 })
+    // Don't reveal whether email exists
+    return NextResponse.json({ ok: true, method: 'email' })
   }
-
-  if (!profile.telegram_chat_id) {
-    return NextResponse.json({ error: 'telegram_not_connected' }, { status: 400 })
-  }
-
-  const origin = req.headers.get('origin') || 'http://localhost:3000'
 
   const { data, error } = await admin.auth.admin.generateLink({
     type: 'recovery',
@@ -44,11 +40,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Не удалось создать ссылку сброса' }, { status: 500 })
   }
 
-  await sendMessage(
-    profile.telegram_chat_id,
-    `🔐 <b>Сброс пароля MebelHub</b>\n\nВы запросили сброс пароля.\n\n<a href="${data.properties.action_link}">👉 Нажмите здесь чтобы задать новый пароль</a>\n\nСсылка действует 1 час. Если вы не запрашивали сброс — проигнорируйте это сообщение.`,
-    true
-  )
+  const link = data.properties.action_link
 
-  return NextResponse.json({ ok: true })
+  if (profile.telegram_chat_id) {
+    // Send via Telegram
+    await sendTg(
+      profile.telegram_chat_id,
+      `🔐 <b>Сброс пароля MebelHub</b>\n\nВы запросили сброс пароля.\n\n<a href="${link}">👉 Нажмите здесь чтобы задать новый пароль</a>\n\nСсылка действует 1 час. Если вы не запрашивали сброс — проигнорируйте это сообщение.`
+    )
+    return NextResponse.json({ ok: true, method: 'telegram' })
+  }
+
+  // Fallback: send via Supabase email
+  await admin.auth.admin.generateLink({
+    type: 'recovery',
+    email,
+    options: { redirectTo: `${origin}/reset-password` },
+  })
+
+  // Use Supabase built-in email reset
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  await fetch(`${supabaseUrl}/auth/v1/recover`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': serviceKey,
+      'Authorization': `Bearer ${serviceKey}`,
+    },
+    body: JSON.stringify({ email, gotrue_meta_security: {} }),
+  })
+
+  return NextResponse.json({ ok: true, method: 'email' })
 }

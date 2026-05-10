@@ -9,6 +9,15 @@ export async function POST(req: NextRequest) {
 
   const { order_id, price, delivery_days, comment } = await req.json()
 
+  // Prevent duplicate offers from the same craftsman
+  const { data: existing } = await supabase
+    .from('offers')
+    .select('id')
+    .eq('order_id', order_id)
+    .eq('craftsman_id', user.id)
+    .maybeSingle()
+  if (existing) return NextResponse.json({ error: 'Вы уже подали оффер на этот заказ' }, { status: 400 })
+
   const { data: offer, error } = await supabase.from('offers').insert({
     order_id,
     craftsman_id: user.id,
