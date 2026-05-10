@@ -51,14 +51,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, method: 'telegram' })
   }
 
-  // Fallback: send via Supabase email
-  await admin.auth.admin.generateLink({
-    type: 'recovery',
-    email,
-    options: { redirectTo: `${origin}/reset-password` },
-  })
-
-  // Use Supabase built-in email reset
+  // Fallback: use Supabase built-in email reset
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
   await fetch(`${supabaseUrl}/auth/v1/recover`, {

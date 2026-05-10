@@ -61,7 +61,7 @@ export default async function CraftsmanDashboard({
       {/* Stats */}
       <div className="grid-4 px-page" style={{ paddingTop: 40, gap: 2, background: BORDER }}>
         {([
-          [String(orders?.length ?? 0),  'открытых',  'заказов сейчас'],
+          [String(totalOrders ?? 0),  'открытых',  'заказов сейчас'],
           [String(offersSent ?? 0),       'офферов',   'отправлено всего'],
           [String(activeCount ?? 0),      'в работе',  'прямо сейчас'],
           [profile?.rating ? Number(profile.rating).toFixed(1) : '—', 'рейтинг', `${profile?.reviews_count ?? 0} отзывов`],

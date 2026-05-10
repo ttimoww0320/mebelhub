@@ -7,6 +7,7 @@ import { G, BG2, BORDER, TEXT, DIM, MUTE, MONO } from '@/lib/tokens'
 export default function TelegramBanner() {
   const [show, setShow] = useState(false)
   const [dismissed, setDismissed] = useState(false)
+  const [settingsLink, setSettingsLink] = useState('/settings')
 
   useEffect(() => {
     if (typeof window !== 'undefined' && sessionStorage.getItem('tg_banner_dismissed')) {
@@ -17,10 +18,13 @@ export default function TelegramBanner() {
       if (!session?.user) return
       const { data } = await supabase
         .from('profiles')
-        .select('telegram_chat_id')
+        .select('telegram_chat_id, role')
         .eq('id', session.user.id)
         .single()
-      if (data && !data.telegram_chat_id) setShow(true)
+      if (data && !data.telegram_chat_id) {
+        setSettingsLink(data.role === 'craftsman' ? '/profile' : '/settings')
+        setShow(true)
+      }
     })
   }, [])
 
@@ -41,7 +45,7 @@ export default function TelegramBanner() {
         </div>
       </div>
       <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
-        <a href="/settings" style={{ background: G, color: '#0A0D12', padding: '8px 16px', fontSize: 12, fontWeight: 600, textDecoration: 'none', borderRadius: 2, letterSpacing: '0.06em' }}>
+        <a href={settingsLink} style={{ background: G, color: '#0A0D12', padding: '8px 16px', fontSize: 12, fontWeight: 600, textDecoration: 'none', borderRadius: 2, letterSpacing: '0.06em' }}>
           Подключить →
         </a>
         <button onClick={dismiss} style={{ background: 'transparent', border: `1px solid ${BORDER}`, color: MUTE, padding: '8px 12px', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', borderRadius: 2 }}>
