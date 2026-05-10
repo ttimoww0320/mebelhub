@@ -9,7 +9,7 @@ export default async function MastersPage() {
   const admin = createAdminClient()
   const { data: masters } = await admin
     .from('profiles')
-    .select('id, full_name, company_name, bio, rating, reviews_count, verified, verification_status')
+    .select('id, full_name, company_name, bio, rating, reviews_count, verified, verification_status, works(count)')
     .eq('role', 'craftsman')
     .order('rating', { ascending: false })
 
