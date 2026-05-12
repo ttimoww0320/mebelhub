@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { G, BG, BG2, BORDER, BORDER2, TEXT, DIM, MUTE, MONO } from '@/lib/tokens'
 
 const PAYME_ENABLED = !!process.env.NEXT_PUBLIC_PAYME_ENABLED
 const CLICK_ENABLED = !!process.env.NEXT_PUBLIC_CLICK_ENABLED
@@ -42,81 +42,105 @@ export default function PaymentButton({ offerId, price }: { offerId: string; pri
     }
   }
 
+  const rowStyle = (active: boolean): React.CSSProperties => ({
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    padding: '14px 16px',
+    background: BG,
+    border: `1px solid ${active ? G : BORDER2}`,
+    borderRadius: 2,
+    cursor: 'pointer',
+    textAlign: 'left',
+    transition: 'border-color 0.15s',
+    opacity: loading && !active ? 0.5 : 1,
+  })
+
   if (!confirmed) {
     return (
-      <div className="p-4 bg-orange-50 rounded-xl border border-orange-200">
-        <p className="text-sm font-semibold text-gray-800 mb-1">Подтвердите заказ</p>
-        <p className="text-sm text-gray-500 mb-4">
-          Выберите способ оплаты чтобы подтвердить заказ мастеру.
-        </p>
-        <Button
-          className="bg-orange-600 hover:bg-orange-700 text-white"
+      <div style={{ padding: '20px 24px', border: `1px solid ${BORDER2}`, background: BG2, borderRadius: 2 }}>
+        <div style={{ fontFamily: MONO, fontSize: 10, color: G, letterSpacing: '0.12em', marginBottom: 10 }}>
+          ◆ ОПЛАТА
+        </div>
+        <div style={{ fontSize: 14, color: TEXT, marginBottom: 6 }}>Подтвердите заказ</div>
+        <div style={{ fontSize: 13, color: DIM, marginBottom: 20 }}>
+          Выберите способ оплаты, чтобы подтвердить заказ мастеру.
+        </div>
+        <button
           onClick={() => setConfirmed(true)}
+          style={{
+            background: G, color: BG, border: 'none',
+            padding: '12px 24px', fontSize: 13, fontWeight: 600,
+            cursor: 'pointer', borderRadius: 2, fontFamily: 'inherit',
+          }}
         >
           Выбрать способ оплаты
-        </Button>
+        </button>
       </div>
     )
   }
 
   return (
-    <div className="p-4 bg-orange-50 rounded-xl border border-orange-200 space-y-3">
-      <p className="text-sm font-semibold text-gray-800">Выберите способ оплаты</p>
-      <p className="text-xs text-gray-500">
-        Сумма заказа: <span className="font-semibold text-orange-700">{Number(price).toLocaleString()} сум</span>
-      </p>
+    <div style={{ padding: '20px 24px', border: `1px solid ${BORDER2}`, background: BG2, borderRadius: 2 }}>
+      <div style={{ fontFamily: MONO, fontSize: 10, color: G, letterSpacing: '0.12em', marginBottom: 10 }}>
+        ◆ ОПЛАТА
+      </div>
+      <div style={{ fontSize: 13, color: DIM, marginBottom: 20 }}>
+        Сумма заказа: <span style={{ color: G, fontWeight: 600 }}>${Number(price).toLocaleString()}</span>
+      </div>
 
-      <div className="space-y-2">
-        {/* Cash - always available */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <button
           onClick={payCash}
           disabled={!!loading}
-          className="w-full flex items-center gap-3 p-3 bg-white border-2 border-gray-200 hover:border-orange-400 rounded-xl transition-colors text-left disabled:opacity-50"
+          style={rowStyle(loading === 'cash')}
         >
-          <span className="text-2xl">💵</span>
+          <span style={{ fontSize: 22 }}>💵</span>
           <div>
-            <p className="text-sm font-semibold text-gray-800">Оплата наличными</p>
-            <p className="text-xs text-gray-400">Расплатитесь напрямую с мастером</p>
+            <div style={{ fontSize: 13, color: TEXT, fontWeight: 500 }}>Оплата наличными</div>
+            <div style={{ fontSize: 12, color: MUTE, marginTop: 2 }}>Расплатитесь напрямую с мастером</div>
           </div>
-          {loading === 'cash' && <span className="ml-auto text-xs text-gray-400">...</span>}
+          {loading === 'cash' && <span style={{ marginLeft: 'auto', fontSize: 12, color: MUTE }}>...</span>}
         </button>
 
-        {/* Payme - only when configured */}
         {PAYME_ENABLED && (
           <button
             onClick={() => payOnline('payme')}
             disabled={!!loading}
-            className="w-full flex items-center gap-3 p-3 bg-white border-2 border-gray-200 hover:border-blue-400 rounded-xl transition-colors text-left disabled:opacity-50"
+            style={rowStyle(loading === 'payme')}
           >
-            <span className="text-2xl font-bold text-[#00AAFF]">P</span>
+            <span style={{ fontSize: 20, fontWeight: 700, color: '#00AAFF' }}>P</span>
             <div>
-              <p className="text-sm font-semibold text-gray-800">Payme</p>
-              <p className="text-xs text-gray-400">Онлайн оплата картой</p>
+              <div style={{ fontSize: 13, color: TEXT, fontWeight: 500 }}>Payme</div>
+              <div style={{ fontSize: 12, color: MUTE, marginTop: 2 }}>Онлайн оплата картой</div>
             </div>
-            {loading === 'payme' && <span className="ml-auto text-xs text-gray-400">...</span>}
+            {loading === 'payme' && <span style={{ marginLeft: 'auto', fontSize: 12, color: MUTE }}>...</span>}
           </button>
         )}
 
-        {/* Click - only when configured */}
         {CLICK_ENABLED && (
           <button
             onClick={() => payOnline('click')}
             disabled={!!loading}
-            className="w-full flex items-center gap-3 p-3 bg-white border-2 border-gray-200 hover:border-green-400 rounded-xl transition-colors text-left disabled:opacity-50"
+            style={rowStyle(loading === 'click')}
           >
-            <span className="text-2xl font-bold text-[#6ABD45]">C</span>
+            <span style={{ fontSize: 20, fontWeight: 700, color: '#6ABD45' }}>C</span>
             <div>
-              <p className="text-sm font-semibold text-gray-800">Click</p>
-              <p className="text-xs text-gray-400">Онлайн оплата картой</p>
+              <div style={{ fontSize: 13, color: TEXT, fontWeight: 500 }}>Click</div>
+              <div style={{ fontSize: 12, color: MUTE, marginTop: 2 }}>Онлайн оплата картой</div>
             </div>
-            {loading === 'click' && <span className="ml-auto text-xs text-gray-400">...</span>}
+            {loading === 'click' && <span style={{ marginLeft: 'auto', fontSize: 12, color: MUTE }}>...</span>}
           </button>
         )}
       </div>
 
       <button
-        className="text-xs text-gray-400 hover:text-gray-600"
         onClick={() => setConfirmed(false)}
+        style={{
+          marginTop: 16, background: 'none', border: 'none',
+          fontSize: 12, color: MUTE, cursor: 'pointer', fontFamily: 'inherit',
+        }}
       >
         Отмена
       </button>

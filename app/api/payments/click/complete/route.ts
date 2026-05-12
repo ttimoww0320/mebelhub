@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   if (params.error !== '0') {
     await admin.from('payments').update({ status: 'failed' }).eq('id', paymentId)
-    return NextResponse.json({ error: 0, error_note: 'Cancelled' })
+    return NextResponse.json({ error: -6, error_note: 'Transaction cancelled' })
   }
 
   await admin.from('payments').update({ status: 'paid' }).eq('id', paymentId)

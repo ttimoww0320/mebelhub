@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import AdminVerifyButtons from './verify-buttons'
+import { G, BG, BG2, BORDER, BORDER2, TEXT, DIM, MUTE, MONO, HEAD } from '@/lib/tokens'
 
 const ADMIN_EMAIL = 'toirovtimurmalik@gmail.com'
 
@@ -22,50 +23,61 @@ export default async function AdminPage() {
     .order('created_at', { ascending: true })
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
-      <h1 className="text-2xl font-bold mb-2">Панель администратора</h1>
-      <p className="text-gray-500 text-sm mb-8">Верификация мастеров</p>
+    <div style={{ background: BG, color: TEXT, minHeight: '100vh' }}>
+      <div style={{ maxWidth: 800, margin: '0 auto', padding: '60px 24px' }}>
 
-      {!pending?.length ? (
-        <div className="text-center py-20 text-gray-400">
-          <p>Нет заявок на верификацию</p>
+        <div style={{ fontFamily: MONO, fontSize: 11, color: G, letterSpacing: '0.14em', marginBottom: 16 }}>
+          § АДМИНИСТРАТОР
         </div>
-      ) : (
-        <div className="space-y-4">
-          {pending.map((craftsman) => (
-            <div key={craftsman.id} className="border rounded-xl p-5 bg-white shadow-sm">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div>
-                  <p className="font-semibold text-lg">{craftsman.full_name}</p>
-                  {craftsman.phone && <p className="text-sm text-gray-500">{craftsman.phone}</p>}
-                  {craftsman.bio && (
-                    <p className="text-sm text-gray-600 mt-1 max-w-md line-clamp-2">{craftsman.bio}</p>
-                  )}
-                  <p className="text-xs text-gray-400 mt-1">
-                    Регистрация: {new Date(craftsman.created_at).toLocaleDateString('ru-RU')}
-                    {(craftsman.rating ?? 0) > 0 && ` · ★ ${craftsman.rating} (${craftsman.reviews_count} отзывов)`}
-                  </p>
+        <h1 style={{ fontFamily: HEAD, fontSize: 48, fontWeight: 300, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
+          Верификация мастеров
+        </h1>
+        <p style={{ color: DIM, fontSize: 14, margin: '0 0 48px' }}>
+          Заявок на рассмотрении: {pending?.length ?? 0}
+        </p>
+
+        {!pending?.length ? (
+          <div style={{ textAlign: 'center', padding: '80px 0', color: MUTE }}>
+            <div style={{ fontFamily: HEAD, fontSize: 28, fontWeight: 300, marginBottom: 8 }}>Заявок нет</div>
+            <div style={{ fontSize: 13 }}>Все заявки обработаны</div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, background: BORDER }}>
+            {pending.map((craftsman) => (
+              <div key={craftsman.id} style={{ background: BG2, padding: '28px 32px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: HEAD, fontSize: 22, marginBottom: 6 }}>{craftsman.full_name}</div>
+                    {craftsman.phone && (
+                      <div style={{ fontSize: 13, color: DIM, marginBottom: 4 }}>{craftsman.phone}</div>
+                    )}
+                    {craftsman.bio && (
+                      <div style={{ fontSize: 13, color: DIM, lineHeight: 1.5, maxWidth: 480, marginBottom: 8 }}>
+                        {craftsman.bio.slice(0, 160)}{craftsman.bio.length > 160 ? '…' : ''}
+                      </div>
+                    )}
+                    <div style={{ fontFamily: MONO, fontSize: 11, color: MUTE, letterSpacing: '0.06em' }}>
+                      Регистрация: {new Date(craftsman.created_at).toLocaleDateString('ru-RU')}
+                      {(craftsman.rating ?? 0) > 0 && ` · ★ ${craftsman.rating} (${craftsman.reviews_count} отз.)`}
+                    </div>
+                    {craftsman.verification_doc_url && (
+                      <a
+                        href={craftsman.verification_doc_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ display: 'inline-block', marginTop: 12, fontSize: 12, color: G, textDecoration: 'none', border: `1px solid ${BORDER2}`, padding: '6px 14px', borderRadius: 2 }}
+                      >
+                        Открыть документ →
+                      </a>
+                    )}
+                  </div>
+                  <AdminVerifyButtons craftsmanId={craftsman.id} />
                 </div>
-                <AdminVerifyButtons craftsmanId={craftsman.id} />
               </div>
-
-              {craftsman.verification_doc_url && (
-                <div className="mt-4">
-                  <p className="text-xs text-gray-400 mb-2">Документ:</p>
-                  <a
-                    href={craftsman.verification_doc_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-orange-600 hover:underline text-sm"
-                  >
-                    Открыть документ →
-                  </a>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

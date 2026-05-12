@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
   if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 })
   if (order.customer_id !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   if (order.status === 'completed') return NextResponse.json({ ok: true })
+  if (order.status !== 'in_progress') return NextResponse.json({ error: 'Order is not in progress' }, { status: 400 })
 
   await admin.from('orders').update({ status: 'completed' }).eq('id', orderId)
 

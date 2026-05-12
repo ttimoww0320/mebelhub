@@ -110,6 +110,7 @@ export default function OrderDetailPage() {
       .select('id, sender_id, body, created_at')
       .eq('order_id', id)
       .order('created_at', { ascending: true })
+      .limit(200)
       .then(({ data }) => setMessages(data || []))
     const channel = supabase
       .channel(`chat-${id}`)

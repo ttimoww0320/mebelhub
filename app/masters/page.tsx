@@ -17,6 +17,7 @@ export default async function MastersPage() {
     .from('profiles')
     .select('id, full_name, company_name, bio, rating, reviews_count, verified, verification_status, works(count)')
     .eq('role', 'craftsman')
+    .eq('verified', true)
     .order('rating', { ascending: false })
 
   const list = masters ?? []

@@ -57,19 +57,8 @@ export async function POST(req: NextRequest) {
     link: '/profile',
   })
 
-  // Recalculate craftsman rating
-  const { data: reviews } = await admin
-    .from('reviews')
-    .select('rating')
-    .eq('craftsman_id', craftsmanId)
-
-  if (reviews?.length) {
-    const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-    await admin.from('profiles').update({
-      rating: Math.round(avg * 100) / 100,
-      reviews_count: reviews.length,
-    }).eq('id', craftsmanId)
-  }
+  // Recalculate craftsman rating atomically via rpc to avoid race conditions
+  await admin.rpc('recalc_craftsman_rating', { craftsman_id: craftsmanId })
 
   return NextResponse.json({ ok: true })
 }

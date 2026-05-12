@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     await sendNotification({
       userId: user.id,
       title: 'Оффер отправлен',
-      body: `Вы предложили $${price} на заказ "${order.title}". Ждите ответа заказчика.`,
+      body: `Вы предложили $${Number(price).toLocaleString()} на заказ "${order.title}". Ждите ответа заказчика.`,
       link: `/orders/${order_id}`,
     })
   }
